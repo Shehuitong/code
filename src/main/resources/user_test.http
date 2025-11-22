@@ -1,0 +1,83 @@
+### 1. 用户注册
+POST http://localhost:8080/api/user/register
+Content-Type: application/json
+
+{
+  "userName": "lily",
+  "password": "123456aA",
+  "confirmPassword": "123456aA",
+  "college":"FOREIGN_LANGUAGE",
+  "studentId": "202301019",
+  "grade": "GRADE_2023",
+  "phone": "13800138005"
+}
+
+
+### 2. 用户登录
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202301019",
+  "password": "123456aA",
+  "userType": "USER"
+}
+
+### 3. 查看用户信息
+GET http://localhost:8080/api/user/profile?userId=1
+Content-Type: application/json
+
+### 4. 编辑信息
+PUT http://localhost:8080/api/user/info?userId=1
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "phone": "18900138000"
+}
+
+###编辑资料时，同时修改手机号 + 头像
+PUT http://localhost:8080/api/user/info?userId=1
+Content-Type: application/json
+
+{
+"userId": 3,
+"phone": "13900139007",
+"avatar": "http://localhost:8080/avatars/3_123.png"
+}
+
+
+### 5. 上传用户头像（文件上传）
+POST http://localhost:8080/api/user/avatar?userId=1
+Content-Type: multipart/form-data; boundary=WebKitFormBoundary7MA4YWxkTrZu0gW
+
+file=<file="C:\Users\AK\avatar-test\test.png">
+
+### 头像上传测试（后端专用，IDEA 100% 识别）
+POST http://localhost:8080/api/user/avatar
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+userId=1
+
+file=<file="C:\\Users\\AK\\avatar\\test.png">
+
+
+###6. 查看用户报名过的活动
+GET http://localhost:8080/api/user/my-registrations?userId=1
+Content-Type: application/json
+
+{
+  "userId": 1
+}
+
+###7.修改密码
+POST http://localhost:8080/api/user/password?userId=1
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "oldPassword": "123456aA",
+  "newPassword": "aA654321"
+}
+
+

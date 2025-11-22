@@ -1,0 +1,9 @@
+### 1. 登录
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025008",
+  "password": "123456aA",
+  "userType": "ADMIN"
+}
