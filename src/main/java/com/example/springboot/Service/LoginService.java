@@ -1,4 +1,4 @@
-package com.example.springboot.Service;
+package com.example.springboot.service;
 import com.example.springboot.dto.LoginDTO; // 导入登录请求DTO
 import com.example.springboot.vo.LoginResponse;
 

@@ -1,4 +1,4 @@
-package com.example.springboot.Service;
+package com.example.springboot.service;
 import com.example.springboot.dto.UserProfileDTO;
 import com.example.springboot.entity.User;
 import org.springframework.web.multipart.MultipartFile;

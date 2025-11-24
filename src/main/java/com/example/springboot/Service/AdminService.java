@@ -1,4 +1,4 @@
-package com.example.springboot.Service;
+package com.example.springboot.service;
 
 import com.example.springboot.dto.AdminDetailDTO;
 import com.example.springboot.entity.Admin;

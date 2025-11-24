@@ -1,6 +1,6 @@
 package com.example.springboot.controller;
 
-import com.example.springboot.Service.LoginService;
+import com.example.springboot.service.LoginService;
 import com.example.springboot.common.Result;
 import com.example.springboot.dto.LoginDTO;
 import com.example.springboot.vo.LoginResponse;

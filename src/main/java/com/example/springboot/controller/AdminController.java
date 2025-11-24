@@ -3,7 +3,7 @@ package com.example.springboot.controller;
 import com.example.springboot.common.Result;
 import com.example.springboot.dto.AdminDetailDTO;
 import com.example.springboot.entity.Admin;
-import com.example.springboot.Service.AdminService;
+import com.example.springboot.service.AdminService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
