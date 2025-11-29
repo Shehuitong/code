@@ -7,7 +7,7 @@ Content-Type: application/json
   "password":"123456aA",
   "confirmPassword": "123456aA",
   "college":"FOREIGN_LANGUAGE",
-  "studentId": "202300210",
+  "studentId": "202300211",
   "grade": "GRADE_2025",
   "phone": "13800138005"
 }
@@ -56,7 +56,7 @@ Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
-  "oldPassword": "Aa1223456",
+  "oldPassword": "Aa202200101",
   "newPassword": "Aa123456"
 
 }

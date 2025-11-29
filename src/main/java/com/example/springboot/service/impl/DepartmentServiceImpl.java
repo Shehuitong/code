@@ -31,7 +31,7 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
 
     // 根据部门ID查询部门
     @Override
-    public Department getByDeptId(Long  deptId) {
+    public Department getByDeptId(Long deptId) {
         return baseMapper.selectOne(new LambdaQueryWrapper<Department>()
                 .eq(Department::getDeptId, deptId));
     }
