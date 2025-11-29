@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class DepartmentUpdateDTO {
     @NotNull(message = "部门ID不能为空")
-    private Integer deptId;
+    private Long deptId;
 
     @NotBlank(message = "部门名称不能为空")
     private String departmentName;

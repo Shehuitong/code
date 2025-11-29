@@ -118,7 +118,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
 
         // 关键：部门信息不为空就赋值，否则给默认值
         if (dept != null) {
-            dto.setDeptId(Math.toIntExact(dept.getDeptId())); // 部门ID
+            dto.setDeptId(dept.getDeptId()); // 部门ID
             dto.setDepartmentName(dept.getDepartmentName()); // 部门名称
         } else {
             dto.setDeptId(null);

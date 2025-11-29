@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class ActivityListDTO {
     private Long activityId;         // 活动ID（用于跳转详情）
     private String activityName;     // 活动标题
-    private Integer departmentId;    // 所属部门ID（可关联部门名）
+    private Long departmentId;    // 所属部门ID（可关联部门名）
     private LocalDateTime holdStartTime; // 活动开始时间
     private String location;         // 举办地点
     private ApplyCollegeEnum applyCollege; // 报名对象学院
