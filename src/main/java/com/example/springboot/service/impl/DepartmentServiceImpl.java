@@ -31,14 +31,14 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
 
     // 根据部门ID查询部门
     @Override
-    public Department getByDeptId(Integer deptId) {
+    public Department getByDeptId(Long  deptId) {
         return baseMapper.selectOne(new LambdaQueryWrapper<Department>()
                 .eq(Department::getDeptId, deptId));
     }
 
     // 部门头像上传
     @Override
-    public String uploadDeptAvatar(Integer deptId, MultipartFile file) {
+    public String uploadDeptAvatar(Long deptId, MultipartFile file) {
         return uploadAvatar(deptId, file, DEPT_AVATAR_PATH, "dept_");
     }
 
@@ -80,7 +80,7 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
 
     // 查看部门详情（含该部门举办的活动）
     @Override
-    public DepartmentDetailDTO getDepartmentDetail(Integer deptId) {
+    public DepartmentDetailDTO getDepartmentDetail(Long deptId) {
         // 1. 查询部门基本信息
         Department department = getByDeptId(deptId);
         if (department == null) {

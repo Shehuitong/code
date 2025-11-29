@@ -12,7 +12,7 @@ import java.util.List;
 public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> implements ActivityService {
 
     @Override
-    public List<Activity> getByDepartmentId(int departmentId) {
+    public List<Activity> getByDepartmentId(Long departmentId) {
         return baseMapper.selectList(
                 new LambdaQueryWrapper<Activity>()
                         .eq(Activity::getDepartmentId, departmentId)

@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ActivityService extends IService<Activity> {
     // 根据部门ID查询活动列表
-    List<Activity> getByDepartmentId(int departmentId);
+    List<Activity> getByDepartmentId(Long departmentId);
 }

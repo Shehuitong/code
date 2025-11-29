@@ -21,7 +21,7 @@ public class DepartmentController {
     // 部门头像上传
     @PostMapping("/avatar")
     public Result<String> uploadDeptAvatar(
-            @RequestParam("deptId") Integer deptId,
+            @RequestParam("deptId") Long deptId,
             @RequestParam("file") MultipartFile file) {
         String avatarUrl = departmentService.uploadDeptAvatar(deptId, file);
         return Result.success(avatarUrl);
@@ -29,7 +29,7 @@ public class DepartmentController {
 
     //查看部门信息
     @GetMapping("/detail")
-    public Result<DepartmentDetailDTO> getDepartmentDetail(@RequestParam("deptId") Integer deptId) {
+    public Result<DepartmentDetailDTO> getDepartmentDetail(@RequestParam("deptId") Long deptId) {
         DepartmentDetailDTO detailDTO = departmentService.getDepartmentDetail(deptId);
         return Result.success(detailDTO);
     }
