@@ -7,9 +7,11 @@ import com.example.springboot.dto.UserRegisterDTO;
 public interface UserService extends IService<User>{
     // 查看个人资料
     UserProfileDTO getUserInfo(Long userId);
-    boolean updateUserInfo(Long userId, String newPhone, String newAvatarUrl);
+    //编辑用户个人资料（手机号和头像）
+    boolean updateUserInfo(Long userId, String newPhone);
     // 上传头像
     String uploadAvatar(Long userId, MultipartFile file);
+    //用户注册
     User register(UserRegisterDTO registerDTO);
     // 根据学号查询用户（必须定义）
     User getByStudentId(String studentId);

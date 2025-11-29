@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.dto.ActivityDetailDTO;
 import com.example.springboot.dto.ActivityListDTO;
 import com.example.springboot.dto.ActivitySuggestDTO;
-import com.example.springboot.Service.ActivitySearchService;
+import com.example.springboot.service.ActivitySearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

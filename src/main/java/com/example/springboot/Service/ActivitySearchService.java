@@ -1,4 +1,4 @@
-package com.example.springboot.Service;
+package com.example.springboot.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.dto.ActivityDetailDTO;

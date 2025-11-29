@@ -18,11 +18,13 @@ CREATE TABLE `DepartmentAdmin` (
   admin_password VARCHAR(255) NOT NULL COMMENT '管理员密码（存储加密后的值）',
  admin_name VARCHAR(100) NOT NULL COMMENT '管理员昵称',
   admin_avatar_url VARCHAR(255) DEFAULT NULL COMMENT '管理员头像URL地址'
+      --college VARCHAR(100) NOT NULL COMMENT '所属学院'
 );
 
 -- 单独定义索引（H2推荐方式）
 CREATE INDEX `idx_department_id` ON `DepartmentAdmin` (`department_id`);
 CREATE UNIQUE INDEX `uk_employee_id` ON `DepartmentAdmin` (`employee_id`);
+--CREATE INDEX `idx_college` ON `DepartmentAdmin` (`college`);
 
 CREATE TABLE IF NOT EXISTS Activity (
                                         activity_id BIGINT AUTO_INCREMENT PRIMARY KEY, -- 活动主键ID（自增）
@@ -76,3 +78,129 @@ CREATE TABLE IF NOT EXISTS UserActivityRegistration (
     CONSTRAINT fk_registration_activity FOREIGN KEY (activity_id) REFERENCES `Activity`(activity_id),
     CONSTRAINT uk_user_activity UNIQUE (id, activity_id)
     );
+-- 1. 创建部门表（H2语法，移除末尾COMMENT，改用单独注释语句）
+CREATE TABLE IF NOT EXISTS Department (
+                                          department_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '部门ID',
+                                          department_name VARCHAR(50) NOT NULL COMMENT '部门名称',
+    description VARCHAR(200) COMMENT '部门描述',
+    logo_url VARCHAR(255) DEFAULT 'https://picsum.photos/id/20/200' COMMENT '部门头像URL（对应查询中的logo_url）',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    department_college VARCHAR(100) NOT NULL COMMENT '所属学院'
+    );
+
+-- 2. 为部门表添加注释（H2支持的表注释语法）
+COMMENT ON TABLE Department IS '部门表';
+
+--收藏关注表
+CREATE TABLE user_favorites (
+                                favorite_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                user_id BIGINT,
+                                target_id BIGINT,
+                                target_type VARCHAR(255),
+                                favorite_status VARCHAR(255),
+                                create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                is_deleted INT DEFAULT 0
+);
+
+-- 插入测试数据：覆盖「收藏部门」「关注活动」「已取消收藏」三种场景
+INSERT INTO user_favorites (user_id, target_id, target_type, favorite_status, create_time, is_deleted)
+VALUES
+    -- 用户ID=3 收藏 部门ID=1（外国语学院-学生会）
+    (1, 1, 'DEPARTMENT', '已收藏', '2025-11-20 10:30:00', 0),
+    -- 用户ID=3 收藏 部门ID=3（外国语学院-志愿者协会）
+    (3, 3, 'DEPARTMENT', '已收藏', '2025-11-21 14:15:00', 0),
+    -- 用户ID=3 关注 活动ID=2（英语演讲比赛）
+    (3, 2, 'ACTIVITY', '已收藏', '2025-11-22 09:45:00', 0),
+    -- 用户ID=3 关注 活动ID=4（跨文化交流沙龙）
+    (3, 4, 'ACTIVITY', '已收藏', '2025-11-23 16:20:00', 0),
+    -- 用户ID=3 取消收藏 部门ID=5（已取消状态）
+    (3, 5, 'DEPARTMENT', '已收藏', '2025-11-24 11:00:00', 0),
+    -- 用户ID=2 收藏 部门ID=1（其他用户的收藏数据，用于测试权限隔离）
+    (2, 1, 'DEPARTMENT', '已收藏', '2025-11-25 13:30:00', 0),
+    -- 用户ID=2 关注 活动ID=3（其他用户的关注数据）
+    (2, 3, 'ACTIVITY', '已收藏', '2025-11-26 15:50:00', 0);
+
+-- 插入第一条：大学生程序设计竞赛
+INSERT INTO Activity (
+    activity_name, department_id, activity_desc, hold_start_time, hold_end_time,
+    location, apply_college, score_type, score, max_people,
+    remaining_people, apply_count, apply_deadline, status,
+    created_time, apply_time, volunteer_hours, follower_count, hold_college, apply_grade
+) VALUES (
+             '大学生程序设计竞赛', 1, '面向全校学生的编程竞赛，提升实战能力...', '2025-06-10 09:00:00', '2025-06-10 17:00:00',
+             '计算机学院报告厅', '全校', '1.1.科技竞赛', 2.00, 50,
+             25, 25, '2025-06-05 23:59:59', '报名进行中',
+             '2025-05-20 10:00:00', '2025-06-01 00:00:00', 2, 84, '计算机学院', '2025级'
+         );
+
+-- 插入第二条：数学建模讲座
+INSERT INTO Activity (
+    activity_name, department_id, activity_desc, hold_start_time, hold_end_time,
+    location, apply_college, score_type, score, max_people,
+    remaining_people, apply_count, apply_deadline, status,
+    created_time, apply_time, volunteer_hours, follower_count, hold_college, apply_grade
+) VALUES (
+             '数学建模讲座', 2, '数学建模技巧分享，涵盖竞赛与科研应用...', '2025-06-15 14:00:00', '2025-06-15 16:00:00',
+             '图书馆报告厅', '全校', '1.4.人文与科学素养', 5, 100,
+             80, 20, '2025-06-10 23:59:59', '报名进行中',
+             '2025-05-22 15:00:00', '2025-06-02 00:00:00', 0.5, 45, '计算机学院', '2024级'
+         );
+
+-- 插入第三条：志愿者招募活动
+INSERT INTO Activity (
+    activity_name, department_id, activity_desc, hold_start_time, hold_end_time,
+    location, apply_college, score_type, score, max_people,
+    remaining_people, apply_count, apply_deadline, status,
+    created_time, apply_time, volunteer_hours, follower_count, hold_college, apply_grade
+) VALUES (
+             '志愿者招募活动', 3, '社区服务志愿者招募，累计志愿时长可加分...', '2025-06-20 08:00:00', '2025-06-20 18:00:00',
+             '学校大礼堂', '全校', '1.1.科技竞赛', 10.00, 200,
+             150, 50, '2025-06-15 23:59:59', '报名进行中',
+             '2025-05-25 09:00:00', '2025-06-03 00:00:00', 1, 100, '电气学院', '2023级');
+
+-- 插入第四条：大学生程序设计竞赛
+INSERT INTO Activity (
+    activity_name, department_id, activity_desc, hold_start_time, hold_end_time,
+    location, apply_college, score_type, score, max_people,
+    remaining_people, apply_count, apply_deadline, status,
+    created_time, apply_time, volunteer_hours, follower_count, hold_college, apply_grade
+) VALUES (
+             '英语竞赛', 4, '面向全校学生的英语竞赛，提升实战能力...', '2025-06-10 09:00:00', '2025-06-10 17:00:00',
+             '教学楼', '全校', '1.1.科技竞赛', 2.00, 50,
+             25, 25, '2025-06-05 23:59:59', '报名进行中',
+             '2025-05-20 10:00:00', '2025-06-01 00:00:00', 2, 84, '计算机学院', '2025级'
+         );
+ INSERT INTO DEPARTMENT ( DEPARTMENT_ID, DEPARTMENT_NAME, DESCRIPTION, LOGO_URL, CREATE_TIME,DEPARTMENT_COLLEGE) VALUES
+(1, '学生会', '负责计算机科学与技术、软件工程等专业教学与科研', 'https://logo.cs.edu/computer.png', '2025-09-01 08:00:00','计算机学院'),
+(2, '外联部', '涵盖英语、日语、法语等语种教学，培养涉外人才', 'https://logo.cs.edu/foreign.png', '2025-09-01 08:30:00','外国语学院'),
+(3, '体育部', '专注数学理论与应用研究，开设数学与应用数学、统计学专业', NULL, '2025-09-01 09:00:00','机械学院'),
+(4, '校团委', '从事基础物理与应用物理研究，含光电、新能源方向', 'https://logo.cs.edu/physics.png', '2025-09-01 09:30:00','电气学院'),
+(5, '宣传部', '宣传部门活动', NULL, '2025-09-01 09:30:00','法学院');
+
+
+INSERT INTO DEPARTMENTADMIN (DEPARTMENT_ID, EMPLOYEE_ID, ADMIN_PASSWORD, ADMIN_NAME, ADMIN_AVATAR_URL
+) VALUES
+      ( 1, 'G2025001', 'Admin123', '张管理员', 'https://avatar.admin.com/1.jpg'),
+      ( 2, 'G2025002', 'Admin123', '李管理员', NULL),
+      ( 3, 'G2025003', 'Admin123', '王管理员', 'https://avatar.admin.com/2.jpg'),
+      ( 4, 'G2025004', 'Admin123', '赵管理员', NULL);
+
+-- 插入USER表数据
+INSERT INTO "USER" (USERNAME, STUDENT_ID, COLLEGE, GRADE, PHONE, AVATAR_URL, PASSWORD) VALUES
+-- 2022级 外国语学院（001） 座位01
+('张三', '202200101', '外国语学院', '2022级', '13800138001', NULL, 'Aa202200101'),
+-- 2023级 计算机学院（002） 座位08
+('李四', '202300208', '计算机学院', '2023级', '13900139002', 'https://avatar.default.com/1.jpg', 'Aa202300208'),
+-- 2024级 数学学院（003） 座位15
+('王五', '202400315', '机械学院', '2024级', '13700137003', NULL, 'Aa202400315'),
+-- 2025级 物理学院（004） 座位22
+('赵六', '202500422', '电气学院', '2025级', '13600136004', 'https://avatar.default.com/2.jpg', 'Aa202500422'),
+-- 2022级 文学院（005） 座位30
+('孙七', '202200530', '外国语学院', '2022级', '13500135005', NULL, 'Aa202200530'),
+-- 2023级 外国语学院（001） 座位12
+('周八', '202300112', '化学学院', '2023级', '13400134006', 'https://avatar.default.com/3.jpg', 'Aa202300112');
+
+INSERT INTO USERACTIVITYREGISTRATION (ID, ACTIVITY_ID, REGISTRATION_STATUS)
+VALUES
+    ('1', 1, '已报名'),
+    ('2', 1, '已取消');

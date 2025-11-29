@@ -12,7 +12,7 @@ public class Admin {
     @TableId(value = "admin_id", type = IdType.AUTO)
     private Long Id;
 
-    private int department_id;//
+    private Integer department_id;
     @TableField(exist = false) // 标识该字段不在数据库表中
     private Department department;
 

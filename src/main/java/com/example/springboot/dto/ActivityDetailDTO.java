@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class ActivityDetailDTO {
     private Long activityId;         // 活动ID
     private String activityName;     // 活动标题
-    private Integer departmentId;    // 所属部门ID
+    private Long departmentId;    // 所属部门ID
     private String departmentName;   // 部门名称
     private String activityDesc;     // 完整活动描述
     private LocalDateTime holdStartTime; // 活动开始时间

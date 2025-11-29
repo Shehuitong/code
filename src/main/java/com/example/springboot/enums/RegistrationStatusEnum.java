@@ -8,13 +8,14 @@ import lombok.Getter;
  */
 @Getter
 public enum RegistrationStatusEnum {
-    REGISTERED("已报名"),
-    CANCELED("已取消");
+    APPLIED(1, "已报名"),
+    CANCELLED(2, "已取消");
 
-    @EnumValue
+    private final Integer code;
     private final String desc;
 
-    RegistrationStatusEnum(String desc) {
+    RegistrationStatusEnum(Integer code, String desc) {
+        this.code = code;
         this.desc = desc;
     }
 }

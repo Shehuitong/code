@@ -3,12 +3,12 @@ POST http://localhost:8080/api/user/register
 Content-Type: application/json
 
 {
-  "userName": "lily",
-  "password": "123456aA",
+  "userName": "林一",
+  "password":"123456aA",
   "confirmPassword": "123456aA",
   "college":"FOREIGN_LANGUAGE",
-  "studentId": "202301019",
-  "grade": "GRADE_2023",
+  "studentId": "202300210",
+  "grade": "GRADE_2025",
   "phone": "13800138005"
 }
 
@@ -18,66 +18,62 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "account": "202301019",
-  "password": "123456aA",
-  "userType": "USER"
+  "account": "202200101",
+  "password": "Aa202200101"
 }
+> {%
+    client.global.set("userToken", response.body.data.token);
+%}
 
 ### 3. 查看用户信息
-GET http://localhost:8080/api/user/profile?userId=1
-Content-Type: application/json
+GET http://localhost:8080/api/user/info
+Authorization: Bearer {{userToken}}
 
 ### 4. 编辑信息
-PUT http://localhost:8080/api/user/info?userId=1
+PUT http://localhost:8080/api/user/update-info
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
-  "userId": 1,
-  "phone": "18900138000"
-}
-
-###编辑资料时，同时修改手机号 + 头像
-PUT http://localhost:8080/api/user/info?userId=1
-Content-Type: application/json
-
-{
-"userId": 3,
-"phone": "13900139007",
-"avatar": "http://localhost:8080/avatars/3_123.png"
+  "phone": "18800139000"
 }
 
 
-### 5. 上传用户头像（文件上传）
-POST http://localhost:8080/api/user/avatar?userId=1
-Content-Type: multipart/form-data; boundary=WebKitFormBoundary7MA4YWxkTrZu0gW
-
-file=<file="C:\Users\AK\avatar-test\test.png">
-
-### 头像上传测试（后端专用，IDEA 100% 识别）
-POST http://localhost:8080/api/user/avatar
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-
-userId=1
-
-file=<file="C:\\Users\\AK\\avatar\\test.png">
+### 5. 上传用户头像（文件上传）用curl测试
+curl -X POST "http://localhost:8080/api/user/avatar" ^
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." ^
+-F "file=@C:\Users\张三\Pictures\my-avatar.jpg" ^
+-v
 
 
 ###6. 查看用户报名过的活动
-GET http://localhost:8080/api/user/my-registrations?userId=1
-Content-Type: application/json
-
-{
-  "userId": 1
-}
+GET http://localhost:8080/api/user/my-registrations
+Authorization: Bearer {{userToken}}
 
 ###7.修改密码
-POST http://localhost:8080/api/user/password?userId=1
+PUT http://localhost:8080/api/user/password
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
 
 {
-  "userId": 1,
-  "oldPassword": "123456aA",
-  "newPassword": "aA654321"
+  "oldPassword": "Aa1223456",
+  "newPassword": "Aa123456"
+
 }
 
+###8. 查看我关注的部门
+GET http://localhost:8080/api/user/favorites/departments
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
 
+
+
+###9.查看我收藏的活动
+GET http://localhost:8080/api/user/favorites/activities
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+### 查看报名活动数、收藏活动数和关注部门数
+GET http://localhost:8080/api/user/stats
+Content-Type: application/json
+Authorization: Bearer {{userToken}}

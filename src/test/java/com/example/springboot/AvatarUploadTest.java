@@ -1,5 +1,7 @@
 package com.example.springboot;
 
+import com.example.springboot.entity.Department;
+import com.example.springboot.mapper.DepartmentMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -45,3 +47,4 @@ public class AvatarUploadTest {
         }
     }
 }
+

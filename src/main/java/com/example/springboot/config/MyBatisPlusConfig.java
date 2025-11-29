@@ -5,8 +5,12 @@ import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
+import com.example.springboot.dto.AdminPersonalInfoDTO;
+import com.example.springboot.entity.Admin;
+import com.example.springboot.entity.Department;
 import com.example.springboot.enums.CollegeEnum;
 import com.example.springboot.enums.GradeEnum;
+import com.example.springboot.excption.BusinessErrorException;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
@@ -41,4 +45,5 @@ public class MyBatisPlusConfig {
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.H2)); // 你的数据库类型（H2/MySQL等）
         return interceptor;
     }
+
 }

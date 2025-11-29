@@ -1,7 +1,8 @@
-package com.example.springboot.Service;
+package com.example.springboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.springboot.dto.ActivityRegistrationDTO;
 import com.example.springboot.entity.Activity;
 import com.example.springboot.entity.User;
 import com.example.springboot.entity.ActivityRegistration;
@@ -9,6 +10,7 @@ import com.example.springboot.excption.BusinessErrorException;
 import com.example.springboot.mapper.ActivityMapper;
 import com.example.springboot.mapper.ActivityRegistrationMapper;
 import com.example.springboot.mapper.UserMapper;
+import com.example.springboot.service.ActivityRegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -63,5 +65,20 @@ public class ActivityRegistrationServiceImpl
 
         // 5. 返回结果
         return registrations;
+    }
+
+    @Override
+    public List<ActivityRegistrationDTO> getMyRegisteredActivities(Long userId) {
+        return List.of();
+    }
+
+    @Override
+    public int countByUserId(Long userId) {
+        return 0;
+    }
+
+    @Override
+    public List<ActivityRegistrationDTO> getUserRegistrationDTOs(Long currentUserId) {
+        return List.of();
     }
 }

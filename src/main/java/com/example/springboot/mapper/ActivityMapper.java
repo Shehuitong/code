@@ -1,17 +1,46 @@
 package com.example.springboot.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.springboot.entity.Activity;
-import org.apache.ibatis.annotations.Mapper;
+import com.example.springboot.entity.Department;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.*;
+import java.util.List;
 
 /**
- * 活动Mapper接口（继承MyBatis-Plus的BaseMapper，自动获得CRUD方法）
+ * 活动Mapper（纯注解，修复动态SQL <foreach> 绑定问题）
  */
-@Mapper // 标记为MyBatis的Mapper接口
+@Mapper
 public interface ActivityMapper extends BaseMapper<Activity> {
-    // BaseMapper提供的核心方法：
-    // selectList()：查询列表（支持条件构造器）
-    // selectOne()：查询单个对象（支持条件构造器）
-    // insert()/updateById()/deleteById()：增删改
-    // 如需自定义查询（如按部门ID查活动），可在此添加方法
+
+    /**
+     * 批量查询活动+关联部门信息（关键：用<script>包裹动态SQL）
+     */
+    @Select("""
+        <script>  <!-- 必须加！启用MyBatis动态SQL解析，识别foreach标签 -->
+        SELECT
+            a.*,
+            d.department_id AS dept_id
+        FROM Activity a
+        LEFT JOIN Department d 
+            ON a.department_id = d.department_id
+        WHERE a.activity_id IN 
+            <foreach collection="ids" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </script>
+    """)
+    @Results({
+            // 活动表字段映射（驼峰自动匹配）
+            @Result(property = "activityId", column = "activity_id"),
+            @Result(property = "activityName", column = "activity_name"),
+            @Result(property = "departmentId", column = "department_id"),
+            // 关联部门信息映射
+            @Result(
+                    property = "department",
+                    javaType = Department.class,
+                    column = "departmentId",
+                    one = @One(select = "com.example.springboot.mapper.DepartmentMapper.selectDeptWithName")
+            )
+    })
+    List<Activity> selectActivityWithDeptByIds(@Param("ids") List<Long> ids);
 }

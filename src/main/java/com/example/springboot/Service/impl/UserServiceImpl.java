@@ -1,4 +1,4 @@
-package com.example.springboot.service;
+package com.example.springboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -7,7 +7,9 @@ import com.example.springboot.dto.UserRegisterDTO;
 import com.example.springboot.entity.User;
 import com.example.springboot.excption.BusinessErrorException;
 import com.example.springboot.mapper.UserMapper;
+import com.example.springboot.service.UserService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +17,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.util.Optional;
+import java.nio.file.Paths;
 import java.io.File;
 import java.io.IOException;
 
+import static net.sf.jsqlparser.util.validation.metadata.NamedObject.user;
+
+@Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
@@ -26,7 +32,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final BCryptPasswordEncoder passwordEncoder;
     // 头像存储路径（实际项目建议用OSS，避免本地路径依赖）
     private static final String AVATAR_PATH = "D:/campus/avatar/";
-
+    private static final String DEFAULT_SUFFIX = ".png";
     @Autowired
     public UserServiceImpl(BCryptPasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
@@ -44,6 +50,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     // 2.查看个人资料
     @Override
         public UserProfileDTO getUserInfo(Long userId) {
+
             User user = baseMapper.selectById(userId);
             if (user == null) {
                 throw new BusinessErrorException("用户不存在");
@@ -55,7 +62,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     // 编辑资料（头像和手机号）
     @Override
-    public boolean updateUserInfo(Long userId, String newPhone, String newAvatarUrl) {
+    public boolean updateUserInfo(Long userId, String newPhone) {
         User user = baseMapper.selectById(userId);
         if (user == null) {
             throw new BusinessErrorException("用户不存在");
@@ -69,11 +76,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 throw new BusinessErrorException("手机号格式不正确，需输入11位有效手机号");
             }
             user.setPhone(newPhone); // 新增：将新手机号设置到用户实体
-        }
-
-        // 头像处理：传递了新头像URL则更新
-        if (newAvatarUrl != null) {
-            user.setAvatar(newAvatarUrl);
         }
 
         return baseMapper.updateById(user) > 0;
@@ -94,45 +96,59 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPassword(passwordEncoder.encode(newPassword));
         return baseMapper.updateById(user) > 0;
     }
-
-    // 4. 实现接口：上传头像
+//4.头像上传
     @Override
     public String uploadAvatar(Long userId, MultipartFile file) {
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null) {
-            throw new BusinessErrorException("上传文件无有效名称");
+        // 1. 核心校验（文件非空+用户存在，合并关键校验）
+        if (file.isEmpty() || file.getSize() == 0) {
+            throw new RuntimeException("上传文件为空，请选择有效图片");
+        }
+        User user = baseMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessErrorException("用户不存在，无法上传头像");
         }
 
-        boolean isJpg = originalFilename.endsWith(".jpg") || originalFilename.endsWith(".jpeg");
-        boolean isPng = originalFilename.endsWith(".png");
-        if (!isJpg && !isPng) {
-            throw new BusinessErrorException("仅支持jpg/png格式");
-        }
-
-        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
+        // 2. 简化文件名生成（优化后缀处理+路径拼接）
+        String origName = file.getOriginalFilename();
+        // 后缀处理：用Optional避免null判断，简洁优雅
+        String suffix = Optional.ofNullable(origName)
+                .filter(name -> name.contains("."))
+                .map(name -> name.substring(name.lastIndexOf(".")))
+                .orElse(DEFAULT_SUFFIX);
         String fileName = userId + "_" + System.currentTimeMillis() + suffix;
-        File dest = new File(AVATAR_PATH + fileName);
+        File destFile = Paths.get(AVATAR_PATH, fileName).toFile(); // 规范路径拼接（避免字符串拼接错误）
 
-        try {
-            File parentDir = dest.getParentFile();
-            if (!parentDir.exists()) {
-                boolean mkdirSuccess = parentDir.mkdirs();
-                if (!mkdirSuccess) {
-                    throw new BusinessErrorException("头像存储目录创建失败");
-                }
-            }
-            FileUtils.copyInputStreamToFile(file.getInputStream(), dest);
-            String avatarUrl = "/avatar/" + fileName;
-            User user = new User();
-            user.setId(userId);
-            user.setAvatar(avatarUrl);
-            baseMapper.updateById(user);
-            return avatarUrl;
-        } catch (IOException e) {
-            throw new BusinessErrorException("头像上传失败：" + e.getMessage());
+        // 3. 简化目录创建（mkdirs失败直接抛异常，无需额外判断）
+        File dir = destFile.getParentFile();
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new RuntimeException("头像存储目录创建失败，路径：" + dir.getAbsolutePath());
         }
-    }
 
+        // 4. 文件复制+完整性校验（合并异常处理，减少冗余）
+        try {
+            FileUtils.copyInputStreamToFile(file.getInputStream(), destFile);
+            // 校验文件完整性（核心逻辑保留）
+            if (destFile.length() != file.getSize()) {
+                throw new IOException("文件复制不完整，原大小：" + file.getSize() + "字节，目标大小：" + destFile.length() + "字节");
+            }
+            log.info("文件上传成功！大小：{}KB，路径：{}", file.getSize() / 1024, destFile);
+        } catch (IOException e) {
+            // 异常时删除无效文件（合并删除逻辑，避免重复）
+            if (destFile.exists() && !destFile.delete()) {
+                log.warn("无效文件删除失败，路径：{}", destFile);
+            }
+            log.error("头像上传失败", e);
+            throw new RuntimeException("头像上传失败：" + e.getMessage());
+        }
+
+        // 5. 数据库更新（逻辑不变，保持简洁）
+        String avatarUrl = "/avatar/" + fileName;
+        user.setAvatarUrl(avatarUrl);
+        baseMapper.updateById(user);
+        log.info("用户[ID:{}]头像更新成功，URL：{}", userId, avatarUrl);
+
+        return avatarUrl;
+    }
     // 5. 实现接口：用户注册
     @Override
     public User register(@Valid @RequestBody UserRegisterDTO registerDTO) {

@@ -3,7 +3,67 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "account": "G2025008",
-  "password": "123456aA",
-  "userType": "ADMIN"
+  "account": "G2025001",
+  "password": "Aa123456"
+}
+
+> {%
+    client.global.set("adminToken", response.body.data.token);
+    console.log("管理员 Token 已存储：" + client.global.get("adminToken"));
+%}
+
+###2. 查看管理员个人信息
+GET http://localhost:8080/api/admin/my-info
+Authorization: Bearer {{adminToken}}
+
+###3. 管理员修改密码
+PUT http://localhost:8080/api/admin/update-password
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "oldPassword": "Admin123",
+  "newPassword": "Aa123456"
+}
+###4. 管理员上传头像
+POST http://localhost:8080/api/admin/avatar
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="admin_avatar.png"
+Content-Type: image/png
+
+@C:\test.png
+----WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+###5. 部门上传头像
+POST http://localhost:8080/api/department/avatar
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="deptId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="dept_avatar.png"
+Content-Type: image/png
+
+@/path/to/local/dept_avatar.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+###6. 查看部门详情
+GET http://localhost:8080/api/department/detail?deptId=3
+Content-Type: application/x-www-form-urlencoded
+
+###6. 编辑部门信息
+PUT http://localhost:8080/api/department/update
+Content-Type: application/json
+
+{
+  "deptId": 1,
+  "department_name": "体育部",
+  "description": "负责体育相关专业教学与管理"
 }

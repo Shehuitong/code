@@ -23,7 +23,7 @@ public class Activity {
     private String activityName; // 活动名称（非空）
 
     @TableField(value = "department_id", insertStrategy = FieldStrategy.NOT_NULL)
-    private Integer departmentId; // 关联部门ID（外键，非空）
+    private Long departmentId; // 关联部门ID（外键，非空）
 
     @TableField(value = "activity_desc",insertStrategy = FieldStrategy.NOT_EMPTY)
     private String activityDesc; // 活动详细介绍（非空）
@@ -82,5 +82,6 @@ public class Activity {
     // 非数据库字段：关联查询部门信息
     @TableField(exist = false)
     private Department department;
+
 
 }

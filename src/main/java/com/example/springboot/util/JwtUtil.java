@@ -45,10 +45,15 @@ public class JwtUtil {
         return claims.get("role", String.class);
     }
 
-    // 保持其他方法不变（getUserIdFromToken、parseToken），但均改为非static
-    public Long getUserIdFromToken(String token) {
+    public Long getAdminId(String token) {
         Claims claims = parseToken(token);
-        return claims.get("userId", Long.class);
+        return claims.get("adminId", Long.class); // 对应Token中管理员ID的实际字段名
+    }
+
+    // 在JwtUtil类中添加方法
+    public Long getUserId(String token) {
+        Claims claims = parseToken(token); // 需确保parseToken是JwtUtil中已实现的Token解析方法
+        return claims.get("userId", Long.class); // 从Token的Claims中提取userId
     }
 
     private Claims parseToken(String token) {

@@ -24,7 +24,7 @@ public class User {
     private String username; // 姓名
 
     @TableField("avatar_url")
-    private String avatar;//头像
+    private String avatarUrl;//头像
 
     private CollegeEnum college; // 学院
 

@@ -1,4 +1,4 @@
-package com.example.springboot.Service;
+package com.example.springboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,7 +10,7 @@ import com.example.springboot.entity.Department;
 import com.example.springboot.enums.ActivityStatusEnum;
 import com.example.springboot.mapper.ActivityMapper;
 import com.example.springboot.mapper.DepartmentMapper;
-import com.example.springboot.Service.ActivitySearchService;
+import com.example.springboot.service.ActivitySearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -113,7 +113,7 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
 
         // 2. 关联查询部门名称（用于详情页显示“主办方”）
         Department department = departmentMapper.selectById(activity.getDepartmentId());
-        String departmentName = department != null ? department.getDepartment_name() : "未知部门";
+        String departmentName = department != null ? department.getDepartmentName() : "未知部门";
 
         // 3. 实体转DTO
         ActivityDetailDTO detailDTO = new ActivityDetailDTO();

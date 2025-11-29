@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class UserProfileDTO {
-    private String avatar;    // 头像
+    private String avatarUrl;    // 头像
     private String username;  // 姓名
     private String studentId; // 学号
     private CollegeEnum college;   // 学院

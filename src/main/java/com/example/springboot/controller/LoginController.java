@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
+
+import static net.sf.jsqlparser.util.validation.metadata.NamedObject.user;
 
 // 构造器注入替代字段注入，解决“不建议使用字段注入”警告
 @RestController
@@ -30,5 +34,6 @@ public class LoginController {
         LoginResponse loginResponse = loginService.login(loginDTO);
         // 若Result.success支持双参数则保留，否则改为单参数（如Result.success(loginResponse)）
         return Result.success(loginResponse);
+
     }
 }

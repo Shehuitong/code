@@ -3,12 +3,11 @@ package com.example.springboot.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.springboot.entity.Department;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
-/**
- * 部门Mapper接口（继承MyBatis-Plus的BaseMapper，自动获得CRUD方法）
- */
-@Mapper // 标记为MyBatis的Mapper接口，或通过@MapperScan扫描该包
+@Mapper
 public interface DepartmentMapper extends BaseMapper<Department> {
-    // BaseMapper已包含selectById、selectOne、selectList等基础方法，无需重复定义
-    // 如需自定义查询，可在此添加方法（如按部门ID查询）
+    // 表名改为大写 Department，与实体类 @TableName("Department") 匹配
+    @Select("SELECT department_id, department_name, description, logo_url FROM Department WHERE department_id = #{id}")
+    Department selectDeptWithName(Long id);
 }
