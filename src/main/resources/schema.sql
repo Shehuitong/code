@@ -170,6 +170,18 @@ INSERT INTO Activity (
              25, 25, '2025-06-05 23:59:59', '报名进行中',
              '2025-05-20 10:00:00', '2025-06-01 00:00:00', 2, 84, '计算机学院', '2022级+2025级'
          );
+-- 插入第五条：大学生程序设计竞赛
+INSERT INTO Activity (
+    activity_name, department_id, activity_desc, hold_start_time, hold_end_time,
+    location, apply_college, score_type, score, max_people,
+    remaining_people, apply_count, apply_deadline, status,
+    created_time, apply_time, volunteer_hours, follower_count, hold_college, apply_grade
+) VALUES (
+             '大学生程序设计竞赛', 1, '面向全校学生的编程竞赛，提升实战能力...', '2025-06-10 09:00:00', '2025-06-10 17:00:00',
+             '计算机学院报告厅', '计算机学院', '1.1.科技竞赛', 2.00, 50,
+             25, 25, '2025-06-05 23:59:59', '报名进行中',
+             '2025-05-20 10:00:00', '2025-06-01 00:00:00', 2, 84, '计算机学院', '2023级'
+         );
  INSERT INTO DEPARTMENT ( DEPARTMENT_ID, DEPARTMENT_NAME, DESCRIPTION, LOGO_URL, CREATE_TIME,DEPARTMENT_COLLEGE) VALUES
 (1, '学生会', '负责计算机科学与技术、软件工程等专业教学与科研', 'https://logo.cs.edu/computer.png', '2025-09-01 08:00:00','计算机学院'),
 (2, '外联部', '涵盖英语、日语、法语等语种教学，培养涉外人才', 'https://logo.cs.edu/foreign.png', '2025-09-01 08:30:00','外国语学院'),
