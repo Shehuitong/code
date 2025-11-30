@@ -1,23 +1,36 @@
 package com.example.springboot.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.springboot.dto.ActivityDetailDTO;
 import com.example.springboot.dto.ActivityRegistrationDTO;
+import com.example.springboot.dto.ActivityRegistrationExcelDTO;
 import com.example.springboot.entity.Activity;
 import com.example.springboot.entity.ActivityRegistration;
 import com.example.springboot.entity.Department;
+import com.example.springboot.entity.User;
+import com.example.springboot.enums.ActivityStatusEnum;
 import com.example.springboot.enums.RegistrationStatusEnum;
 import com.example.springboot.excption.BusinessErrorException;
 import com.example.springboot.mapper.ActivityMapper;
 import com.example.springboot.mapper.ActivityRegistrationMapper;
 import com.example.springboot.mapper.DepartmentMapper;
 import com.example.springboot.service.ActivityRegistrationService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+// 假设你的 UserMapper 在 com.example.springboot.mapper 包下（重点看包路径）
+import com.example.springboot.mapper.UserMapper;
+import com.example.springboot.mapper.ActivityRegistrationMapper;
+import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,6 +45,12 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
 
     @Autowired
     private DepartmentMapper departmentMapper;
+
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private ActivityRegistrationMapper activityRegistrationMapper;
+
 
     /**
      * 查看用户已报名的活动（仅查状态码1，返回活动全部信息）
@@ -48,7 +67,7 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
 
         // 2. 查询用户「已报名」状态的报名记录（状态码1）
         LambdaQueryWrapper<ActivityRegistration> registrationWrapper = new LambdaQueryWrapper<ActivityRegistration>()
-                .eq(ActivityRegistration::getUserId, userId.toString())
+                .eq(ActivityRegistration::getUserId, userId) // 类型一致，无需转换
                 .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED);
 
         List<ActivityRegistration> registrationList = baseMapper.selectList(registrationWrapper);
@@ -131,7 +150,7 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         }
 
         LambdaQueryWrapper<ActivityRegistration> countWrapper = new LambdaQueryWrapper<ActivityRegistration>()
-                .eq(ActivityRegistration::getUserId, userId.toString())
+                .eq(ActivityRegistration::getUserId, userId) // 直接传 Long，类型匹配
                 .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED);
 
         return Math.toIntExact(baseMapper.selectCount(countWrapper));
@@ -142,5 +161,110 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         LambdaQueryWrapper<ActivityRegistration> wrapper = new LambdaQueryWrapper<ActivityRegistration>()
                 .eq(ActivityRegistration::getUserId, userId);
         return baseMapper.selectList(wrapper);
+    }
+
+    @Override
+    public void exportRegisteredUsers(Long activityId, HttpServletResponse response) throws IOException {
+        log.info("开始导出活动[{}]的已报名用户", activityId);
+
+        // 1. 校验活动ID
+        if (activityId == null || activityId <= 0) {
+            log.error("活动ID无效：{}", activityId);
+            throw new IllegalArgumentException("活动ID无效");
+        }
+
+        // 2. 查询活动（确认存在）
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) {
+            log.error("活动[{}]不存在", activityId);
+            throw new RuntimeException("活动不存在");
+        }
+
+
+        // 3. 查询该活动的有效报名记录（重点：确认枚举映射正确）
+        LambdaQueryWrapper<ActivityRegistration> registrationWrapper = new LambdaQueryWrapper<>();
+        registrationWrapper.eq(ActivityRegistration::getActivityId, activityId)
+                .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED); // 确保枚举的dbValue与数据库一致
+        List<ActivityRegistration> registrations = baseMapper.selectList(registrationWrapper);
+        log.info("活动[{}]查询到的有效报名记录数：{}", activityId, registrations.size()); // 新增日志：确认报名记录数量
+        if (CollectionUtils.isEmpty(registrations)) {
+            log.info("活动[{}]暂无已报名用户", activityId);
+            throw new RuntimeException("暂无报名数据");
+        }
+
+        // 4. 批量查询关联的用户信息（修复：确保用户ID集合正确）
+        Set<Long> userIds = registrations.stream()
+                .map(ActivityRegistration::getUserId)
+                .filter(Objects::nonNull) // 过滤空用户ID
+                .collect(Collectors.toSet());
+        log.info("报名记录关联的用户ID集合：{}", userIds); // 新增日志：确认用户ID是否有效
+        if (userIds.isEmpty()) {
+            log.error("活动[{}]的报名记录中用户ID全部为空", activityId);
+            throw new RuntimeException("用户数据异常：无有效用户ID");
+        }
+
+        // 修复：使用正确的用户查询方法（确保userMapper实现了selectBatchIds）
+        List<User> users = userMapper.selectBatchIds(userIds);
+        log.info("根据用户ID查询到的用户数量：{}", users.size()); // 新增日志：确认用户查询结果
+        if (CollectionUtils.isEmpty(users)) {
+            log.error("活动[{}]的报名记录关联用户不存在", activityId);
+            throw new RuntimeException("用户数据异常：未查询到用户");
+        }
+
+        // 转为Map便于查询：userId -> User
+        Map<Long, User> userMap = users.stream()
+                .collect(Collectors.toMap(User::getId, Function.identity(), (v1, v2) -> v1));
+        log.info("用户Map中包含的用户ID：{}", userMap.keySet()); // 新增日志：确认用户Map有效
+
+        // 5. 组装Excel导出DTO（修复：不跳过无效用户，标记异常信息）
+        List<ActivityRegistrationExcelDTO> excelDTOs = new ArrayList<>();
+        for (int i = 0; i < registrations.size(); i++) {
+            ActivityRegistration registration = registrations.get(i);
+            User user = userMap.get(registration.getUserId());
+
+            ActivityRegistrationExcelDTO dto = new ActivityRegistrationExcelDTO();
+            dto.setSerialNumber(i + 1); // 序号从1开始
+
+            if (user == null) {
+                // 修复：不跳过，标记用户不存在
+                log.warn("报名记录[{}]关联的用户[{}]不存在", registration.getRegistrationId(), registration.getUserId());
+                dto.setUserName("用户不存在");
+                dto.setStudentId("未知");
+                dto.setCollege("未知");
+                dto.setGrade("未知");
+                dto.setPhone("未知");
+            } else {
+                // 正常填充用户信息
+                dto.setUserName(user.getUsername());
+                dto.setStudentId(user.getStudentId());
+                dto.setCollege(user.getCollege() != null ? user.getCollege().getDesc() : "未知学院"); // 处理空学院
+                dto.setGrade(user.getGrade() != null ? user.getGrade().getDesc() : "未知年级"); // 处理空年级
+                dto.setPhone(user.getPhone() != null ? user.getPhone() : "未填写"); // 处理空手机号
+            }
+            excelDTOs.add(dto);
+        }
+        log.info("最终导出的DTO数量：{}", excelDTOs.size()); // 新增日志：确认DTO数量
+        if (excelDTOs.isEmpty()) {
+            log.error("活动[{}]的报名数据处理后为空", activityId);
+            throw new RuntimeException("处理后无有效数据");
+        }
+
+        // 6. 设置响应头（确保编码正确）
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode(activity.getActivityName() + "报名用户信息", StandardCharsets.UTF_8.name()) + ".xlsx";
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
+
+        // 7. 写入Excel（确保流操作正确）
+        try (OutputStream os = response.getOutputStream()) {
+            // 核心：outputStream（响应流）、DTO.class（字段映射）、sheet名称（非空）
+            EasyExcel.write(response.getOutputStream(), ActivityRegistrationExcelDTO.class)
+                    .sheet("活动报名用户") // 1. 必须指定 Sheet 名称（不能为 null/空字符串）
+                    .doWrite(excelDTOs);  // 2. 传入组装好的 3 条 DTO 列表
+            log.info("活动[{}]的报名用户导出成功，共{}条数据", activityId, excelDTOs.size());
+        } catch (IOException e) {
+            log.error("活动[{}]的报名用户导出失败", activityId, e);
+            throw new RuntimeException("导出失败：" + e.getMessage());
+        }
     }
 }
