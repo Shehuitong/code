@@ -102,11 +102,15 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     // 获取管理员个人信息（仅返回指定字段：昵称、工号、头像、部门名/ID）
     @Override
     public AdminPersonalInfoDTO getAdminPersonalInfo(Long adminId) {
-        // 1. 查管理员表（DepartmentAdmin），拿到 department_id
         Admin admin = adminMapper.selectById(adminId);
         if (admin == null) {
             throw new RuntimeException("管理员不存在");
         }
+
+        // 打印完整实体类字段，确认是否拿到值（关键验证）
+        log.info("管理员完整信息：{}", admin);
+        log.info("部门ID：{}",
+                admin.getDepartment_id());
 
         Department dept = departmentMapper.selectById(admin.getDepartment_id());
 
@@ -118,10 +122,10 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
 
         // 关键：部门信息不为空就赋值，否则给默认值
         if (dept != null) {
-            dto.setDeptId(dept.getDeptId()); // 部门ID
+            dto.setDepartment_Id(dept.getDeptId()); // 部门ID
             dto.setDepartmentName(dept.getDepartmentName()); // 部门名称
         } else {
-            dto.setDeptId(null);
+            dto.setDepartment_Id(null);
             dto.setDepartmentName("未知部门");
         }
 

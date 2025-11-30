@@ -10,7 +10,33 @@ import java.util.List;
 
 @Mapper
 public interface DepartmentMapper extends BaseMapper<Department> {
-    // 表名改为大写 Department，与实体类 @TableName("Department") 匹配
-    @Select("SELECT department_id, department_name, description, logo_url FROM Department WHERE department_id = #{id}")
-    List <Department> selectDeptWithName(@Param("ids") List<Long> ids);
+
+    /**
+     * 单个部门查询（给主键起别名 AS deptId，强制映射）
+     */
+    @Select("SELECT " +
+            "department_id AS deptId, " + // 别名和实体字段名一致
+            "department_name, " +
+            "description, " +
+            "logo_url " +
+            "FROM Department " +
+            "WHERE department_id = #{id}")
+    Department selectById(@Param("id") Long id);
+
+    /**
+     * 批量部门查询（给主键起别名 AS deptId）
+     */
+    @Select("<script>" +
+            "SELECT " +
+            "department_id AS deptId, " + // 别名和实体字段名一致
+            "department_name, " +
+            "description, " +
+            "logo_url " +
+            "FROM Department " +
+            "WHERE department_id IN " +
+            "<foreach collection='ids' item='deptId' open='(' separator=',' close=')'>" +
+            "   #{deptId}" +
+            "</foreach>" +
+            "</script>")
+    List<Department> selectDeptWithName(@Param("ids") List<Long> ids);
 }

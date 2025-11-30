@@ -14,11 +14,10 @@ public interface AdminMapper extends BaseMapper<Admin> {
     @Select("""
         SELECT 
             admin_id, 
-            employee_id, 
-            admin_password, 
+            department_id, 
+            employee_id, -- 对应 workId
             admin_name, 
-            admin_avatar_url, 
-            department_id  -- 强制查询该字段，避免漏查
+            admin_avatar_url -- 对应 avatar
         FROM DepartmentAdmin 
         WHERE admin_id = #{adminId}
     """)

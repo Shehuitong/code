@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -56,43 +57,51 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
             return Collections.emptyList();
         }
 
-        // 3. 批量查询关联的活动信息
+        // 3. 批量查询关联的活动信息（添加日志）
         Set<Long> activityIds = registrationList.stream()
                 .map(ActivityRegistration::getActivityId)
                 .collect(Collectors.toSet());
+        log.info("待查询的活动ID集合：{}", activityIds); // 日志1：确认活动ID正确（应包含1、3）
+
         List<Activity> activityList = activityMapper.selectActivityWithDeptByIds(new ArrayList<>(activityIds));
+        log.info("查询到的活动列表：{}", activityList.stream().map(a -> "活动ID：" + a.getActivityId() + "，部门ID：" + a.getDepartmentId()).collect(Collectors.toList())); // 日志2：确认活动的departmentId是否为1、3
+
         Map<Long, Activity> activityMap = activityList.stream()
                 .collect(Collectors.toMap(Activity::getActivityId, activity -> activity));
 
-        // 4. 批量查询活动关联的部门信息
+        // 4. 批量查询活动关联的部门信息（添加日志）
         Set<Long> departmentIds = activityList.stream()
                 .map(Activity::getDepartmentId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        List<Department> departmentList = departmentMapper.selectDeptWithName(new ArrayList<>(departmentIds));
-        Map<Long, Department> departmentMap = departmentList.stream()
-                .collect(Collectors.toMap(Department::getDeptId, department -> department));
+        log.info("待查询的部门ID集合：{}", departmentIds); // 日志3：确认部门ID是否为1、3
 
-        // 5. 组装DTO：报名信息 + 嵌套完整活动信息（ActivityDetailDTO）
+        List<Department> departmentList = departmentMapper.selectDeptWithName(new ArrayList<>(departmentIds));
+        log.info("查询到的部门列表：{}", departmentList.stream().map(d -> "部门ID：" + d.getDeptId() + "，部门名称：" + d.getDepartmentName()).collect(Collectors.toList())); // 日志4：确认部门是否查询到（应包含学生会、体育部）
+
+        Map<Long, Department> deptMap = departmentList.stream()
+                .filter(dept -> dept.getDeptId() != null)
+                .collect(Collectors.toMap(Department::getDeptId, Function.identity(), (v1, v2) -> v1));
+        log.info("deptMap的key集合（部门ID）：{}", deptMap.keySet()); // 日志5：确认deptMap包含1、3
+
+        // 5. 组装DTO（添加日志）
         List<ActivityRegistrationDTO> resultDTOs = new ArrayList<>();
         for (ActivityRegistration registration : registrationList) {
             ActivityRegistrationDTO registrationDTO = new ActivityRegistrationDTO();
-            // 设置报名记录ID
             registrationDTO.setRegistrationId(registration.getRegistrationId());
-            // 设置报名状态（枚举类型）
             registrationDTO.setRegistrationStatus(RegistrationStatusEnum.APPLIED);
 
-            // 转换活动信息为ActivityDetailDTO
             Activity activity = activityMap.get(registration.getActivityId());
             if (activity != null) {
                 ActivityDetailDTO activityDetailDTO = new ActivityDetailDTO();
                 BeanUtils.copyProperties(activity, activityDetailDTO);
+                log.info("活动ID：{}，复制后的ActivityDetailDTO部门ID：{}", activity.getActivityId(), activityDetailDTO.getDepartmentId()); // 日志6：确认复制后的departmentId是否正确
 
-                // 补充部门名称到活动详情
-                Department department = departmentMap.get(activity.getDepartmentId());
+                // 补充部门名称（添加日志）
+                Department department = deptMap.get(activity.getDepartmentId());
+                log.info("活动ID：{}，通过部门ID：{} 从deptMap获取到的部门：{}", activity.getActivityId(), activity.getDepartmentId(), department); // 日志7：确认是否能获取到部门
+
                 activityDetailDTO.setDepartmentName(department != null ? department.getDepartmentName() : "未知部门");
-
-                // 将活动详情设置到报名DTO中
                 registrationDTO.setActivity(activityDetailDTO);
             } else {
                 // 处理活动已删除的情况

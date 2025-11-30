@@ -6,3 +6,13 @@ GET http://localhost:8080/api/activity/search?keyword=竞赛 & pageNum=1&pageSiz
 
 ###3. 活动详情接口
 GET http://localhost:8080/api/activity/detail/1
+
+
+###1. 搜索联想接口
+GET http://localhost:8080/api/department/search/suggest?keyword=法
+
+###2. 搜索结果分页接口
+GET http://localhost:8080/api/department/search?keyword=计算 & pageNum=1&pageSize=10
+
+###3. 活动详情接口
+GET http://localhost:8080/api/department/detail/3

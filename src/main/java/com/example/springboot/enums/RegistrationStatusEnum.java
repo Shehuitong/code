@@ -1,17 +1,18 @@
 package com.example.springboot.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue; // MyBatis-Plus枚举注解
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
 
 @Getter
 public enum RegistrationStatusEnum {
-    APPLIED(1, "APPLIED", "已报名"),    // 数据库ENUM的字符值是"APPLIED"
-    CANCELLED(2, "CANCELLED", "已取消");// 数据库ENUM的字符值是"CANCELLED"
+    // 调整dbValue为数据库实际存储的中文
+    APPLIED(1, "已报名", "已报名"),    // 数据库ENUM的字符值是"已报名"
+    CANCELLED(2, "已取消", "已取消");// 数据库ENUM的字符值是"已取消"
 
-    private final Integer code;       // 业务逻辑用的数值code（保留你的设计）
-    @EnumValue // 关键：指定该字段映射数据库ENUM的字符值
-    private final String dbValue;     // 与数据库ENUM项完全一致的字符值
-    private final String desc;
+    private final Integer code;       // 业务逻辑用的数值code
+    @EnumValue // 该字段映射数据库ENUM的中文值
+    private final String dbValue;     // 与数据库ENUM项完全一致的中文值
+    private final String desc;        // 描述（这里和dbValue一致，也可根据需要单独定义）
 
     RegistrationStatusEnum(Integer code, String dbValue, String desc) {
         this.code = code;
@@ -19,7 +20,7 @@ public enum RegistrationStatusEnum {
         this.desc = desc;
     }
 
-    // 可选：根据数据库字符值反向获取枚举（用于查询结果映射）
+    // 根据数据库存储的中文值反向获取枚举
     public static RegistrationStatusEnum getByDbValue(String dbValue) {
         for (RegistrationStatusEnum status : values()) {
             if (status.getDbValue().equals(dbValue)) {
