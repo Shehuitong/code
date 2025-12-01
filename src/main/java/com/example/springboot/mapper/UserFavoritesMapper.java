@@ -2,6 +2,7 @@ package com.example.springboot.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.springboot.entity.UserFavorites;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -29,4 +30,20 @@ public interface UserFavoritesMapper extends BaseMapper<UserFavorites> {
                         .eq(UserFavorites::getIsDeleted, 0)
         );
     }
+    // 1. 修复查询已收藏方法的参数类型和SQL字段
+    @Select("select * from user_favorites where user_id = #{userId} and target_id = #{targetId} and target_type = #{targetType} limit 1")
+    UserFavorites selectByUserIdTargetIdAndType(
+            @Param("userId") Long userId,
+            @Param("targetId") Long targetId,
+            @Param("targetType") String targetType,  // 改为String类型，与实体类一致
+            @Param("status") String status
+    );
+
+    // 2. 修复取消收藏（删除）方法的参数类型和SQL字段
+    @Delete("delete from user_favorites where user_id = #{userId} and target_id = #{targetId} and target_type = #{targetType}")
+    void deleteByUserIdTargetIdAndType(
+            @Param("userId") Long userId,
+            @Param("targetId") Long targetId,
+            @Param("targetType") String targetType  // 改为String类型，与实体类一致
+    );
 }

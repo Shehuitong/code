@@ -1,0 +1,159 @@
+@env="global"
+
+### 【前置步骤1】普通用户1（张三）登录 - 获取Token
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202200101",
+  "password": "Aa202200101"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("user1Token", res.data.token);
+        console.log("✅ 用户1登录成功，Token已保存");
+    } else {
+        console.error("❌ 用户1登录失败");
+    }
+%}
+
+
+### 【前置步骤2】普通用户4（赵六）登录 - 获取Token
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202500422",
+  "password": "Aa202500422"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("user4Token", res.data.token);
+        console.log("✅ 用户4登录成功，Token已保存");
+    } else {
+        console.error("❌ 用户4登录失败");
+    }
+%}
+
+
+### 【前置步骤3】管理员（张管理员）登录 - 获取Token
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025001",
+  "password": "Admin123"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("adminToken", res.data.token);
+        console.log("✅ 管理员登录成功，Token已保存");
+    } else {
+        console.error("❌ 管理员登录失败");
+    }
+%}
+
+
+### 【场景1】用户1收藏新活动（活动3：志愿者招募活动）
+POST http://localhost:8080/favorites/add
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=3&targetType=ACTIVITY
+
+
+### 【场景2】验证用户1的活动收藏结果（查询收藏的活动）
+GET http://localhost:8080/api/user/favorites/activities
+Authorization: Bearer {{user1Token}}
+Accept: application/json
+
+
+### 【场景3】用户1重复收藏活动3（已收藏，预期失败）
+POST http://localhost:8080/favorites/add
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=3&targetType=ACTIVITY
+
+
+### 【场景4】用户1收藏新部门（部门2：外联部）
+POST http://localhost:8080/favorites/add
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=2&targetType=DEPARTMENT
+
+
+### 【场景5】验证用户1的部门收藏结果（查询收藏的部门）
+GET http://localhost:8080/api/user/favorites/departments
+Authorization: Bearer {{user1Token}}
+Accept: application/json
+
+
+### 【场景6】用户4取消用户1的收藏（跨用户操作，预期失败）
+POST http://localhost:8080/favorites/cancel
+Authorization: Bearer {{user4Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=3&targetType=ACTIVITY
+
+
+### 【场景7】用户1取消收藏活动3（正常取消，预期成功）
+POST http://localhost:8080/favorites/cancel
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=3&targetType=ACTIVITY
+
+
+### 【场景8】验证活动3取消结果（查询收藏的活动）
+GET http://localhost:8080/api/user/favorites/activities
+Authorization: Bearer {{user1Token}}
+Accept: application/json
+
+
+### 【场景9】用户1取消未收藏的活动（活动1，预期失败）
+POST http://localhost:8080/favorites/cancel
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=1&targetType=ACTIVITY
+
+
+### 【场景10】管理员收藏活动1（权限控制，预期失败）
+POST http://localhost:8080/favorites/add
+Authorization: Bearer {{adminToken}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=1&targetType=ACTIVITY
+
+
+### 【场景11】管理员收藏部门4（校团委，预期成功）
+POST http://localhost:8080/favorites/add
+Authorization: Bearer {{adminToken}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=4&targetType=DEPARTMENT
+
+
+### 【场景12】验证管理员的部门收藏结果
+GET http://localhost:8080/api/user/favorites/departments
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+### 【场景13】用户1取消收藏部门2（正常取消，预期成功）
+POST http://localhost:8080/favorites/cancel
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=2&targetType=DEPARTMENT
+
+
+### 【场景14】验证部门2取消结果（查询收藏的部门）
+GET http://localhost:8080/api/user/favorites/departments
+Authorization: Bearer {{user1Token}}
+Accept: application/json
