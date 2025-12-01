@@ -16,3 +16,8 @@ GET http://localhost:8080/api/department/search?keyword=计算 & pageNum=1&pageS
 
 ###3. 活动详情接口
 GET http://localhost:8080/api/department/detail/3
+
+###
+GET http://localhost:8080/api/admin/activity/export/2
+Authorization: Bearer {{adminToken}}
+Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet

@@ -33,5 +33,14 @@ public interface ActivityRegistrationService extends IService<ActivityRegistrati
      * @throws RuntimeException 业务异常（活动不存在、无报名用户等）
      */
     void exportRegisteredUsers(Long activityId, HttpServletResponse response) throws IOException;
+    /**
+     * 查询当前用户已报名的活动（含部门信息）
+     * @param userId 用户ID
+     * @return 报名活动列表（带部门ID+名称）
+     */
+    // 新增：用户报名活动
+    void registerActivity(Long userId, Long activityId);
 
+    // 新增：用户取消报名
+    void cancelRegistration(Long userId, Long activityId);
 }

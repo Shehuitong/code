@@ -11,10 +11,5 @@ import java.time.LocalDateTime;
  */
 @Data
 public class DepartmentListDTO {
-    private Long departmentId; // 部门ID
-    private String departmentName; // 部门名称
-    private String description; // 部门描述
-    private String logoUrl; // 部门头像
-    private CollegeEnum departmentCollege; // 所属学院
-    private LocalDateTime createTime; // 创建时间
+    private Department department; // 部门基本信息
 }

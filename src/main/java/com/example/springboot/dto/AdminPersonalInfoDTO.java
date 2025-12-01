@@ -9,5 +9,5 @@ public class AdminPersonalInfoDTO {
     private String workId;       // 工号
     private String avatar;       // 头像URL
     private String departmentName; // 所属部门名称
-    private Long department_Id;
+    private Long departmentId;
 }

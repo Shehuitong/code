@@ -3,7 +3,7 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "account": "G2025001",
+  "account": "G2025002",
   "password": "Admin123"
 }
 
@@ -55,7 +55,7 @@ Content-Type: image/png
 
 
 ###6. 查看部门详情
-GET http://localhost:8080/api/department/detail?deptId=3
+GET http://localhost:8080/api/department/detail?departmentId=1
 Content-Type: application/x-www-form-urlencoded
 
 ###6. 编辑部门信息

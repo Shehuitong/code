@@ -97,7 +97,7 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
         Map<Long, String> deptNameMap = deptIds.isEmpty() ? new HashMap<>() :
                 departmentMapper.selectBatchIds(deptIds).stream()
                         .collect(Collectors.toMap(
-                                Department::getDeptId,
+                                Department::getDepartmentId,
                                 Department::getDepartmentName,
                                 (k1, k2) -> k1
                         ));

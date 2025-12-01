@@ -15,7 +15,7 @@ public interface DepartmentMapper extends BaseMapper<Department> {
      * 单个部门查询（给主键起别名 AS deptId，强制映射）
      */
     @Select("SELECT " +
-            "department_id AS deptId, " + // 别名和实体字段名一致
+            "department_id , " + // 别名和实体字段名一致
             "department_name, " +
             "description, " +
             "logo_url " +
@@ -23,19 +23,16 @@ public interface DepartmentMapper extends BaseMapper<Department> {
             "WHERE department_id = #{id}")
     Department selectById(@Param("id") Long id);
 
-    /**
-     * 批量部门查询（给主键起别名 AS deptId）
-     */
     @Select("<script>" +
             "SELECT " +
-            "department_id AS deptId, " + // 别名和实体字段名一致
+            "department_id, " +
             "department_name, " +
             "description, " +
             "logo_url " +
             "FROM Department " +
             "WHERE department_id IN " +
-            "<foreach collection='ids' item='deptId' open='(' separator=',' close=')'>" +
-            "   #{deptId}" +
+            "<foreach collection='ids' item='id' open='(' separator=',' close=')'>" + // item设为id（极简）
+            "   #{id}" + // 对应item名，不用记复杂代号
             "</foreach>" +
             "</script>")
     List<Department> selectDeptWithName(@Param("ids") List<Long> ids);

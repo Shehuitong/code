@@ -1,0 +1,398 @@
+@env="global"
+
+### 1. 【前置】用户4（赵六，电气学院2025级）登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202500422",
+  "password": "Aa202500422"
+}
+> {%
+    try {
+        const resBody = response.body || {};
+        if (resBody.code === 200 && resBody.data && resBody.data.token) {
+            client.global.set("user4Token", resBody.data.token);
+            console.log("✅ 用户4登录成功，Token：" + resBody.data.token.substring(0, 20) + "..."); // 打印Token前20位验证
+        } else {
+            console.error("❌ 用户4登录失败：" + (resBody.message || "未知错误") + "，响应体：" + JSON.stringify(resBody));
+        }
+    } catch (e) {
+        console.error("❌ 用户4登录脚本错误：" + e.message);
+    }
+%}
+
+
+### 2. 【前置】用户2（李四，计算机学院2023级）登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202300208",
+  "password": "Aa202300208"
+}
+> {%
+    try {
+        const resBody = response.body || {};
+        if (resBody.code === 200 && resBody.data && resBody.data.token) {
+            client.global.set("user2Token", resBody.data.token);
+            console.log("✅ 用户2登录成功，Token已设置");
+        } else {
+            console.error("❌ 用户2登录失败：" + (resBody.message || "未知错误") + "，响应体：" + JSON.stringify(resBody));
+        }
+    } catch (e) {
+        console.error("❌ 用户2登录脚本错误：" + e.message);
+    }
+%}
+
+
+### 3. 【前置】管理员（张管理员）登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025001",
+  "password": "Admin123"
+}
+> {%
+    try {
+        const resBody = response.body || {};
+        if (resBody.code === 200 && resBody.data && resBody.data.token) {
+            client.global.set("adminToken", resBody.data.token);
+            console.log("✅ 管理员登录成功，Token已设置");
+        } else {
+            console.error("❌ 管理员登录失败：" + (resBody.message || "未知错误") + "，响应体：" + JSON.stringify(resBody));
+        }
+    } catch (e) {
+        console.error("❌ 管理员登录脚本错误：" + e.message);
+    }
+%}
+
+
+### 4. 【前置】用户1（张三，外国语学院2022级）登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202200101",
+  "password": "Aa202200101"
+}
+> {%
+    try {
+        const resBody = response.body || {};
+        if (resBody.code === 200 && resBody.data && resBody.data.token) {
+            client.global.set("user1Token", resBody.data.token);
+            console.log("✅ 用户1登录成功，Token已设置");
+        } else {
+            console.error("❌ 用户1登录失败：" + (resBody.message || "未知错误") + "，响应体：" + JSON.stringify(resBody));
+        }
+    } catch (e) {
+        console.error("❌ 用户1登录脚本错误：" + e.message);
+    }
+%}
+
+
+### 5. 查询活动1（程序设计竞赛）初始信息（验证活动存在性）
+###3. 活动详情接口
+GET http://localhost:8080/api/activity/detail/1
+
+### 6. 用户4（2025级）报名活动1（显式传递请求体参数）
+POST http://localhost:8080/api/registration/activity/1
+Authorization: Bearer {{user4Token}}
+Content-Type: application/json
+
+{
+  "activityId": 1,
+  "userId": 4
+}
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 报名接口返回HTML错误页：状态码=" + response.status + "，响应内容：" + response.body);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 用户4报名响应体：" + JSON.stringify(resBody)); // 打印完整响应定位错误
+            if (resBody.code === 200) {
+                console.log("✅ 用户4报名活动1成功：" + resBody.message);
+            } else {
+                console.error("❌ 用户4报名活动1失败：" + (resBody.message || "未知错误") + "，响应码=" + resBody.code + "，错误详情=" + (resBody.data || "无"));
+            }
+        }
+    } catch (e) {
+        console.error("❌ 用户4报名脚本错误：" + e.message + "，错误栈：" + e.stack);
+    }
+%}
+
+
+### 7. 验证活动1名额变化（剩余-1，已报名+1）
+###3. 活动详情接口
+GET http://localhost:8080/api/activity/detail/1
+
+### 8. 用户4重复报名活动1（业务校验）
+POST http://localhost:8080/api/registration/activity/1
+Authorization: Bearer {{user4Token}}
+Content-Type: application/json
+
+{
+  "activityId": 1,
+  "userId": 4
+}
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 重复报名接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 用户4重复报名响应体：" + JSON.stringify(resBody));
+            if (resBody.code !== 200 && resBody.message && resBody.message.includes("已报名")) {
+                console.log("✅ 重复报名校验通过：" + resBody.message);
+            } else {
+                console.error("❌ 重复报名校验失败：" + (resBody.message || "未拦截重复报名") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 重复报名脚本错误：" + e.message);
+    }
+%}
+
+
+### 9. 用户4取消活动1报名
+DELETE http://localhost:8080/api/registration/activity/1
+Authorization: Bearer {{user4Token}}
+Content-Type: application/json // 补充Content-Type，匹配后端接收要求
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 取消报名接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 用户4取消报名响应体：" + JSON.stringify(resBody));
+            if (resBody.code === 200) {
+                console.log("✅ 用户4取消活动1报名成功：" + resBody.message);
+            } else {
+                console.error("❌ 用户4取消报名失败：" + (resBody.message || "未知错误") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 用户4取消报名脚本错误：" + e.message);
+    }
+%}
+
+
+### 10. 验证活动1名额恢复（剩余+1，已报名-1）
+GET http://localhost:8080/api/activity/1
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            const initialRemaining = client.global.get("activity1Remaining") || 0;
+            const initialApplyCount = client.global.get("activity1ApplyCount") || 0;
+
+            if (resBody.code === 200 && resBody.data) {
+                const currentRemaining = resBody.data.remainingPeople;
+                const currentApplyCount = resBody.data.applyCount;
+                const expectedRemaining = initialRemaining + 1;
+                const expectedApplyCount = initialApplyCount - 1;
+
+                console.log("📊 活动1名额恢复对比：");
+                console.log("   操作前剩余：" + initialRemaining + " → 当前剩余：" + currentRemaining + "（预期：" + expectedRemaining + "）");
+                console.log("   操作前已报：" + initialApplyCount + " → 当前已报：" + currentApplyCount + "（预期：" + expectedApplyCount + "）");
+                console.log((currentRemaining === expectedRemaining && currentApplyCount === expectedApplyCount) ? "✅ 名额恢复正确" : "❌ 名额恢复错误");
+            } else {
+                console.error("❌ 查询活动1失败：" + (resBody.message || "响应格式错误") + "，响应体：" + JSON.stringify(resBody));
+            }
+        }
+    } catch (e) {
+        console.error("❌ 名额恢复验证脚本错误：" + e.message);
+    }
+%}
+
+
+### 11. 用户4重复取消活动1报名（业务校验）
+DELETE http://localhost:8080/api/registration/activity/1
+Authorization: Bearer {{user4Token}}
+Content-Type: application/json
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 重复取消接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            const errorMsg = resBody.message || "";
+            console.log("🔍 用户4重复取消响应体：" + JSON.stringify(resBody));
+            if (resBody.code !== 200 && (errorMsg.includes("未报名") || errorMsg.includes("已取消"))) {
+                console.log("✅ 重复取消校验通过：" + errorMsg);
+            } else {
+                console.error("❌ 重复取消校验失败：" + (errorMsg || "未拦截重复取消") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 重复取消脚本错误：" + e.message);
+    }
+%}
+
+
+### 12. 用户2（2023级）报名活动1（年级不符合：活动1要求2025级）
+POST http://localhost:8080/api/registration/activity/1
+Authorization: Bearer {{user2Token}}
+Content-Type: application/json
+
+{
+  "activityId": 1,
+  "userId": 2
+}
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 年级校验接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 用户2报名活动1响应体：" + JSON.stringify(resBody));
+            if (resBody.code !== 200 && resBody.message && resBody.message.includes("年级")) {
+                console.log("✅ 年级校验通过：" + resBody.message);
+            } else {
+                console.error("❌ 年级校验失败：" + (resBody.message || "未拦截不符合年级的报名") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 年级校验脚本错误：" + e.message);
+    }
+%}
+
+
+### 13. 管理员报名活动1（权限校验）
+POST http://localhost:8080/api/registration/activity/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "adminId": 3
+}
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 管理员权限校验接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 管理员报名响应体：" + JSON.stringify(resBody));
+            if (resBody.code !== 200 && resBody.message && resBody.message.includes("管理员不可参与")) {
+                console.log("✅ 管理员权限校验通过：" + resBody.message);
+            } else {
+                console.error("❌ 管理员权限校验失败：" + (resBody.message || "未拦截管理员报名") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 管理员报名脚本错误：" + e.message);
+    }
+%}
+
+### 14. 用户2报名活动3（志愿者招募，2023级可报）
+POST http://localhost:8080/api/registration/activity/3
+Authorization: Bearer {{user2Token}}
+Content-Type: application/json
+
+{
+  "activityId": 3,
+  "userId": 2
+}
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 用户2报名接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 用户2报名活动3响应体：" + JSON.stringify(resBody));
+            if (resBody.code === 200) {
+                console.log("✅ 用户2报名活动3成功：" + resBody.message);
+            } else {
+                console.error("❌ 用户2报名活动3失败：" + (resBody.message || "未知错误") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 用户2报名活动3脚本错误：" + e.message);
+    }
+%}
+
+
+### 15. 用户2查询个人报名列表
+GET http://localhost:8080/api/registration/my
+Authorization: Bearer {{user2Token}}
+Accept: application/json
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 报名列表接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 用户2报名列表响应体：" + JSON.stringify(resBody));
+            if (resBody.code === 200) {
+                const data = resBody.data || [];
+                let hasActivity3 = false;
+                for (let i = 0; i < data.length; i++) {
+                    console.log("📌 报名记录" + i + "：" + JSON.stringify(data[i])); // 打印每条报名记录
+                    if (data[i].activityId === 3 || (data[i].activity && data[i].activity.activityId === 3)) {
+                        hasActivity3 = true;
+                        break;
+                    }
+                }
+                console.log("用户2报名列表是否包含活动3：" + (hasActivity3 ? "✅ 是（正确）" : "❌ 否（错误）"));
+            } else {
+                console.error("❌ 查询个人报名列表失败：" + (resBody.message || "未知错误") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 个人报名列表查询脚本错误：" + e.message + "，错误栈：" + e.stack);
+    }
+%}
+
+
+### 16. 模拟活动1名额已满（需手动将数据库中activity1的remaining_people改为0后执行）
+POST http://localhost:8080/api/registration/activity/1
+Authorization: Bearer {{user4Token}}
+Content-Type: application/json
+
+{
+  "activityId": 1,
+  "userId": 4
+}
+
+> {%
+    try {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/html")) {
+            console.error("❌ 名额已满校验接口返回HTML错误页：状态码=" + response.status);
+        } else {
+            const resBody = response.body || {};
+            console.log("🔍 名额已满校验响应体：" + JSON.stringify(resBody));
+            if (resBody.code !== 200 && resBody.message && resBody.message.includes("名额已满")) {
+                console.log("✅ 名额已满校验通过：" + resBody.message);
+            } else {
+                console.error("❌ 名额已满校验失败：" + (resBody.message || "未拦截名额已满的报名") + "，响应码=" + resBody.code);
+            }
+        }
+    } catch (e) {
+        console.error("❌ 名额已满校验脚本错误：" + e.message);
+    }
+%}

@@ -10,7 +10,7 @@ public class Department {
 
     @TableId(type = IdType.AUTO, value = "department_id") // 主键注解
     @TableField(value = "department_id") // 显式指定数据库字段名（和数据库完全一致，包括大小写）
-    private Long deptId;
+    private Long departmentId;
 
     private String description;//部门描述
 

@@ -14,7 +14,7 @@ public class Admin {
 
     // 部门ID
     @TableField(value = "department_id")
-    private Long department_id; // 保持和你代码一致（后续可统一驼峰，当前先兼容）
+    private Long departmentId; // 保持和你代码一致（后续可统一驼峰，当前先兼容）
 
     // 工号（对应数据库 employee_id）
     @TableField(value = "employee_id") // 显式绑定数据库字段
@@ -35,4 +35,5 @@ public class Admin {
     // 非数据库字段（关联部门，无需映射）
     @TableField(exist = false)
     private Department department;
+
 }

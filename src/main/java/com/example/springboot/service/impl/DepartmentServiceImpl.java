@@ -24,27 +24,21 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
 
     // 头像存储路径（建议配置在application.yml，这里简化写死）
     private static final String DEPT_AVATAR_PATH = "D:/campus/dept_avatar/";
-    private static final String ADMIN_AVATAR_PATH = "D:/campus/admin_avatar/";
 
     @Autowired
     private ActivityService activityService; // 注入活动服务，查询部门举办的活动
 
     // 根据部门ID查询部门
     @Override
-    public Department getByDeptId(Long deptId) {
+    public Department getByDeptId(Long departmentId) {
         return baseMapper.selectOne(new LambdaQueryWrapper<Department>()
-                .eq(Department::getDeptId, deptId));
+                .eq(Department::getDepartmentId, departmentId));
     }
 
     // 部门头像上传
     @Override
-    public String uploadDeptAvatar(Long deptId, MultipartFile file) {
-        return uploadAvatar(deptId, file, DEPT_AVATAR_PATH, "dept_");
-    }
-
-    // 管理员头像上传（复用头像上传逻辑）
-    public String uploadAdminAvatar(Long adminId, MultipartFile file) {
-        return uploadAvatar(adminId, file, ADMIN_AVATAR_PATH, "admin_");
+    public String uploadDeptAvatar(Long departmentId, MultipartFile file) {
+        return uploadAvatar(departmentId, file, DEPT_AVATAR_PATH, "dept_");
     }
 
     // 通用头像上传工具方法（提取重复逻辑）
@@ -73,23 +67,24 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
         } catch (IOException e) {
             throw new BusinessErrorException("头像上传失败：" + e.getMessage());
         }
-
         // 4. 返回头像URL（前端可通过该URL访问）
         return "/" + prefix + "avatar/" + fileName; // 示例：/dept_avatar/dept_1_123456.png
     }
 
     // 查看部门详情（含该部门举办的活动）
     @Override
-    public DepartmentDetailDTO getDepartmentDetail(Long deptId) {
+    public DepartmentDetailDTO getDepartmentDetail(Long departmentId) {
         // 1. 查询部门基本信息
-        Department department = getByDeptId(deptId);
+        Department department = getByDeptId(departmentId);
         if (department == null) {
             throw new BusinessErrorException("部门不存在");
         }
 
         // 2. 查询部门举办的活动（假设Activity表有department_id字段）
         List<Activity> activities = activityService.list(new LambdaQueryWrapper<Activity>()
-                .eq(Activity::getDepartmentId, deptId));
+                .eq(Activity::getDepartmentId, departmentId));
+
+        activities.forEach(activity -> activity.setDepartment(department));
 
         // 3. 组装DTO返回
         DepartmentDetailDTO detailDTO = new DepartmentDetailDTO();
@@ -102,7 +97,7 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
     @Override
     public boolean updateDepartment(DepartmentUpdateDTO updateDTO) {
         // 1. 校验部门是否存在
-        Department department = getByDeptId(updateDTO.getDeptId());
+        Department department = getByDeptId(updateDTO.getDepartmentId());
         if (department == null) {
             throw new BusinessErrorException("部门不存在");
         }

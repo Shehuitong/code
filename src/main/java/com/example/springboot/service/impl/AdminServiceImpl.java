@@ -102,36 +102,41 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     // 获取管理员个人信息（仅返回指定字段：昵称、工号、头像、部门名/ID）
     @Override
     public AdminPersonalInfoDTO getAdminPersonalInfo(Long adminId) {
+        // 1. 查询管理员（用自带方法，确保拿到所有字段）
         Admin admin = adminMapper.selectById(adminId);
         if (admin == null) {
             throw new RuntimeException("管理员不存在");
         }
 
-        // 打印完整实体类字段，确认是否拿到值（关键验证）
-        log.info("管理员完整信息：{}", admin);
-        log.info("部门ID：{}",
-                admin.getDepartment_id());
 
-        Department dept = departmentMapper.selectById(admin.getDepartment_id());
 
-        // 3. 组装 DTO（把部门信息赋值进去）
+        // 2. 查询部门（加 null 防护，避免传入 null 查不到）
+        Department dept = null;
+        if (admin.getDepartmentId() != null) { // 只有管理员的 department_id 不为 null，才查部门
+            dept = departmentMapper.selectById(admin.getDepartmentId());
+            log.info("通过 department_id：{} 查询到部门：{}", admin.getDepartmentId(), dept);
+        }else {
+            log.info("管理员 department_id 为 null，不查询部门信息，adminId: {}", adminId);
+        }
+
+        // 3. 组装 DTO（保持你的原有逻辑，只修正 null 处理）
         AdminPersonalInfoDTO dto = new AdminPersonalInfoDTO();
         dto.setAdminName(admin.getAdminName());
         dto.setWorkId(admin.getWorkId());
         dto.setAvatar(admin.getAvatar());
 
-        // 关键：部门信息不为空就赋值，否则给默认值
+        // 部门信息赋值：优先用部门表数据，否则用管理员表的 department_id
         if (dept != null) {
-            dto.setDepartment_Id(dept.getDeptId()); // 部门ID
-            dto.setDepartmentName(dept.getDepartmentName()); // 部门名称
+            dto.setDepartmentId(dept.getDepartmentId()); // 部门表的 deptId（映射自 department_id，正确）
+            dto.setDepartmentName(dept.getDepartmentName());
         } else {
-            dto.setDepartment_Id(null);
+            // 即使部门不存在，也返回管理员表的 department_id（不再是 null）
+            dto.setDepartmentId(admin.getDepartmentId());
             dto.setDepartmentName("未知部门");
         }
-
+        log.info("管理员个人信息查询完成，adminId: {}，返回DTO信息：{}", adminId, dto);
         return dto;
     }
-
     // 独立修改密码接口（与头像上传分离）
     @Override
     public boolean updateAdminPassword(Long adminId, String oldPassword, String newPassword) {

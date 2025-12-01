@@ -1,7 +1,9 @@
 package com.example.springboot.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.springboot.dto.DepartmentDetailDTO;
 import com.example.springboot.dto.DepartmentListDTO;
 import com.example.springboot.dto.DepartmentSuggestDTO;
@@ -24,10 +26,12 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
-public class DepartmentSearchServiceImpl implements DepartmentSearchService {
+public class DepartmentSearchServiceImpl extends ServiceImpl<DepartmentMapper, Department>  implements DepartmentSearchService {
 
     private final DepartmentMapper departmentMapper;
     private final ActivityService activityService;
+
+
 
     /**
      * 1. 搜索联想：返回含关键词的部门名称（最多10个）
@@ -97,36 +101,36 @@ public class DepartmentSearchServiceImpl implements DepartmentSearchService {
      * 3. 部门详情：根据ID查询完整信息（含部门举办的活动）
      */
     @Override
-    public DepartmentDetailDTO getDepartmentDetail(Long deptId) {
-        // 参数校验：ID为空抛异常
-        if (deptId == null) {
-            throw new IllegalArgumentException("部门ID不能为空！");
-        }
-
-        // 1. 查询部门
-        Department department = departmentMapper.selectById(deptId);
+    public DepartmentDetailDTO getDepartmentDetail(Long departmentId) {
+        // 1. 查询部门基本信息
+        Department department = getByDeptId(departmentId);
         if (department == null) {
-            throw new BusinessErrorException("部门不存在！");
+            throw new BusinessErrorException("部门不存在");
         }
 
-        // 2. 查询部门举办的活动
-        List<Activity> activities = activityService.getByDepartmentId(deptId);
+        // 2. 查询部门举办的活动（假设Activity表有department_id字段）
+        List<Activity> activities = activityService.list(new LambdaQueryWrapper<Activity>()
+                .eq(Activity::getDepartmentId, departmentId));
+
+        activities.forEach(activity -> activity.setDepartment(department));
 
         // 3. 组装DTO返回
         DepartmentDetailDTO detailDTO = new DepartmentDetailDTO();
         detailDTO.setDepartment(department);
         detailDTO.setActivities(activities);
-
         return detailDTO;
     }
-
+    @Override
+    public Department getByDeptId(Long departmentId) {
+        return baseMapper.selectOne(new LambdaQueryWrapper<Department>()
+                .eq(Department::getDepartmentId, departmentId));
+    }
     /**
      * 工具方法：Department → DepartmentListDTO
      */
     private DepartmentListDTO convertToListDTO(Department department) {
         DepartmentListDTO dto = new DepartmentListDTO();
-        BeanUtils.copyProperties(department, dto);
-        dto.setDepartmentId(department.getDeptId());
+        dto.setDepartment(department);
         return dto;
     }
 }
