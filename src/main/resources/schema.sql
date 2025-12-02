@@ -129,8 +129,8 @@ INSERT INTO Activity (
 ) VALUES (
              '大学生程序设计竞赛', 2, '面向全校学生的编程竞赛，提升实战能力...', '2025-06-10 09:00:00', '2025-06-10 17:00:00',
              '计算机学院报告厅', '全校', '1.1.科技竞赛', 2.00, 50,
-             25, 25, '2025-06-05 23:59:59', '报名进行中',
-             '2025-05-20 10:00:00', '2025-06-01 00:00:00', 2, 84, '计算机学院', '2025级'
+             25, 25, '2025-12-31 23:59:59', '报名进行中',
+             '2025-05-20 10:00:00', '2025-12-02 10:10:00', 2, 84, '计算机学院', '2025级'
          );
 
 -- 插入第二条：数学建模讲座
@@ -155,8 +155,8 @@ INSERT INTO Activity (
 ) VALUES (
              '志愿者招募活动', 2, '社区服务志愿者招募，累计志愿时长可加分...', '2025-06-20 08:00:00', '2025-06-20 18:00:00',
              '学校大礼堂', '全校', '1.1.科技竞赛', 10.00, 200,
-             150, 50, '2025-06-15 23:59:59', '报名进行中',
-             '2025-05-25 09:00:00', '2025-06-03 00:00:00', 1, 100, '电气学院', '2022级+2024级');
+             150, 50, '2025-12-29 23:59:59', '报名进行中',
+             '2025-05-25 09:00:00', '2025-12-3 00:40:00', 1, 100, '电气学院', '2022级+2024级');
 
 -- 插入第四条：大学生程序设计竞赛
 INSERT INTO Activity (
@@ -206,3 +206,24 @@ VALUES
     ('2', 1, '已报名'),
 ('2', 2, '已取消'),
     ('1', 2, '已报名');
+
+CREATE TABLE IF NOT EXISTS notification (
+                                            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                            user_id BIGINT NOT NULL COMMENT '用户ID',
+                                            content VARCHAR(255) NOT NULL COMMENT '通知内容',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    is_read INT DEFAULT 0 COMMENT '是否已读（0=未读，1=已读）',
+    FOREIGN KEY (user_id) REFERENCES `user`(id)
+    );
+
+-- 活动提醒日志表：记录用户接收活动报名提醒的历史，用于去重
+CREATE TABLE IF NOT EXISTS reminder_log (
+                                            id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '日志ID',
+                                            user_id BIGINT NOT NULL COMMENT '用户ID（关联user表）',
+                                            activity_id BIGINT NOT NULL COMMENT '活动ID（关联Activity表）',
+                                            send_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提醒发送时间',
+                                            remark VARCHAR(255) COMMENT '备注信息',
+    -- 外键约束（可选，根据实际需求是否启用）
+    FOREIGN KEY (user_id) REFERENCES `user`(id),
+    FOREIGN KEY (activity_id) REFERENCES Activity(activity_id)
+    );

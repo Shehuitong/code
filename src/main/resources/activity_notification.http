@@ -1,0 +1,50 @@
+@env="global"
+
+### 步骤1：张三登录（数据库实际账号密码）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202200101",
+  "password": "Aa202200101"
+}
+> {%
+    const res = JSON.parse(response.body)
+    if (res.code === 200 && res.data) {
+        client.global.set("userToken", res.data)
+        console.log("✅ 张三登录成功，Token已保存")
+    } else {
+        console.error("❌ 登录失败：" + res.message)
+    }
+%}
+
+
+### 步骤2：收藏活动3（数据库中志愿者招募活动ID=3）
+POST http://localhost:8080/favorites/add
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=3&targetType=ACTIVITY
+
+### 步骤3：手动修改活动3的报名时间（触发通知）
+> 操作：打开数据库工具执行SQL
+> UPDATE Activity
+> SET apply_time = DATE_ADD(NOW(), INTERVAL 5 MINUTE)
+> WHERE activity_id = 3;
+
+
+### 步骤4：查询通知列表（验证是否收到提醒）
+GET http://localhost:8080/api/user/notifications
+Authorization: Bearer {{user1Token}}
+
+> {%
+    const res = JSON.parse(response.body)
+    if (res.code === 200 && res.data) {
+        const hasReminder = res.data.some(item => 
+            item.content === "您收藏的活动距离报名开始还有五分钟！"
+        )
+        hasReminder ? console.log("✅ 测试成功：收到活动提醒") : console.error("❌ 测试失败：未收到提醒")
+    } else {
+        console.error("❌ 查询通知失败：" + res.message)
+    }
+%}
