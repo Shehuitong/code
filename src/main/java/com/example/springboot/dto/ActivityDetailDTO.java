@@ -1,5 +1,7 @@
+
 package com.example.springboot.dto;
 
+import com.example.springboot.entity.Department;
 import com.example.springboot.enums.ActivityStatusEnum;
 import com.example.springboot.enums.ApplyCollegeEnum;
 import com.example.springboot.enums.GradeEnum;
@@ -10,13 +12,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 活动详情DTO：详情页显示的完整信息
+ * 活动详情DTO：包含活动所有属性及部门名称
  */
 @Data
 public class ActivityDetailDTO {
     private Long activityId;         // 活动ID
     private String activityName;     // 活动标题
-    private Long departmentId;    // 所属部门ID
+    private Long departmentId;       // 所属部门ID
     private String departmentName;   // 部门名称
     private String activityDesc;     // 完整活动描述
     private LocalDateTime holdStartTime; // 活动开始时间
@@ -35,4 +37,6 @@ public class ActivityDetailDTO {
     private BigDecimal volunteerHours; // 志愿时长
     private Integer followerCount;   // 收藏人数
     private HoldCollegeEnum holdCollege; // 承办学院
+    private LocalDateTime createdTime; // 活动发布时间（补充缺失属性）
+    private Department department;
 }

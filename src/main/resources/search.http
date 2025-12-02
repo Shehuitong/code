@@ -1,20 +1,20 @@
-###1. 搜索联想接口
+###1. 活动搜索联想接口
 GET http://localhost:8080/api/activity/search/suggest?keyword=数学
 
-###2. 搜索结果分页接口
+###2. 活动搜索结果分页接口
 GET http://localhost:8080/api/activity/search?keyword=竞赛 & pageNum=1&pageSize=10
 
 ###3. 活动详情接口
 GET http://localhost:8080/api/activity/detail/2
 
 
-###1. 搜索联想接口
+###1. 部门搜索联想接口
 GET http://localhost:8080/api/department/search/suggest?keyword=法
 
-###2. 搜索结果分页接口
+###2. 部门搜索结果分页接口
 GET http://localhost:8080/api/department/search?keyword=计算 & pageNum=1&pageSize=10
 
-###3. 活动详情接口
+###3. 部门详情接口
 GET http://localhost:8080/api/department/detail/3
 
 ###

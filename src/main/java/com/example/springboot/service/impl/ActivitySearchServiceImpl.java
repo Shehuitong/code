@@ -1,6 +1,7 @@
 package com.example.springboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.dto.ActivityDetailDTO;
 import com.example.springboot.dto.ActivityListDTO;
@@ -64,32 +65,24 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
      */
     @Override
     public Page<ActivityListDTO> searchActivityList(String keyword, Integer pageNum, Integer pageSize) {
-        // 参数校验：关键词为空抛异常
         if (!StringUtils.hasText(keyword)) {
             throw new IllegalArgumentException("搜索关键词不能为空！");
         }
-        // 分页参数默认值：页码1，每页10条
         pageNum = pageNum == null ? 1 : pageNum;
         pageSize = pageSize == null ? 10 : pageSize;
         String trimKeyword = keyword.trim();
 
-        // 1. 构造查询条件：仅匹配活动名称包含关键词 + 排除下架 + 按发布时间倒序
-        QueryWrapper<Activity> wrapper = new QueryWrapper<>();
-        wrapper.like("activity_name", "%" + trimKeyword + "%") // 仅匹配活动名称
-                .ne("status", ActivityStatusEnum.OFFLINE)
-                .orderByDesc("created_time"); // 最新活动优先
-
-        // 2. 分页查询：Page(pageNum, pageSize) → 页码从1开始
-        Page<Activity> activityPage = activityMapper.selectPage(
-                new Page<>(pageNum, pageSize),
-                wrapper
+        // 分页查询（关联部门）
+        Page<Activity> page = new Page<>(pageNum, pageSize);
+        IPage<Activity> activityPage = activityMapper.selectActivityPageWithDept(
+                page,
+                trimKeyword,
+                ActivityStatusEnum.OFFLINE // 排除下架活动
         );
 
-        // 3. 实体转DTO（Page对象转换）
+        // 转换为DTO（原有逻辑不变）
         Page<ActivityListDTO> listDTOPage = new Page<>();
-        // 复制分页元信息（总条数、总页数等）
         BeanUtils.copyProperties(activityPage, listDTOPage);
-        // 转换活动列表数据（确保包含报名时间等信息）
         List<ActivityListDTO> dtoList = activityPage.getRecords().stream()
                 .map(this::convertToListDTO)
                 .collect(Collectors.toList());
@@ -103,25 +96,28 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
      */
     @Override
     public ActivityDetailDTO getActivityDetail(Long activityId) {
-        // 参数校验：ID为空抛异常
         if (activityId == null) {
             throw new IllegalArgumentException("活动ID不能为空！");
         }
 
-        // 1. 查询活动：不存在或已下架抛异常
-        Activity activity = activityMapper.selectById(activityId);
+        // 关联查询活动+部门完整信息（修改mapper方法，支持关联查询）
+        Activity activity = activityMapper.selectActivityWithDeptById(activityId);
         if (activity == null || ActivityStatusEnum.OFFLINE.equals(activity.getStatus())) {
             throw new RuntimeException("活动不存在或已下架！");
         }
 
-        // 2. 关联查询部门名称（用于详情页显示“主办方”）
-        Department department = departmentMapper.selectById(activity.getDepartmentId());
-        String departmentName = department != null ? department.getDepartmentName() : "未知部门";
-
-        // 3. 实体转DTO（包含全部活动信息）
         ActivityDetailDTO detailDTO = new ActivityDetailDTO();
-        BeanUtils.copyProperties(activity, detailDTO);
-        detailDTO.setDepartmentName(departmentName); // 补充部门名称
+        BeanUtils.copyProperties(activity, detailDTO);  // 复制活动所有属性
+
+        // 设置完整部门信息
+        if (activity.getDepartment() != null) {
+            detailDTO.setDepartment(activity.getDepartment());
+        } else {
+            Department defaultDept = new Department();
+            defaultDept.setDepartmentId(0L);
+            defaultDept.setDepartmentName("未知部门");
+            detailDTO.setDepartment(defaultDept);
+        }
 
         return detailDTO;
     }
@@ -129,11 +125,20 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
     /**
      * 工具方法：Activity → ActivityListDTO（确保复制报名时间等字段）
      */
+    // ActivitySearchServiceImpl.java
     private ActivityListDTO convertToListDTO(Activity activity) {
         ActivityListDTO dto = new ActivityListDTO();
         BeanUtils.copyProperties(activity, dto);
-        // 若有需要显式复制的字段（如报名时间），可在此补充
-        // dto.setApplyTime(activity.getApplyTime());
+
+        // 如果关联到部门，则直接使用；否则设为未知
+        if (activity.getDepartment() != null) {
+            dto.setDepartment(activity.getDepartment());
+        } else {
+            Department defaultDept = new Department();
+            defaultDept.setDepartmentId(activity.getDepartmentId()); // 保留原始部门ID
+            defaultDept.setDepartmentName("未知部门");
+            dto.setDepartment(defaultDept);
+        }
         return dto;
     }
 }
