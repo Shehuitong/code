@@ -1,0 +1,172 @@
+### 1. 管理员登录（获取Token+存储整数类型活动ID）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025002",
+  "password": "Admin123"
+}
+
+> {%
+    client.global.set("adminToken", response.body.data.token);
+    console.log("管理员Token已存储：" + client.global.get("adminToken"));
+    client.global.set("testActivityId", "2");
+    console.log("测试活动ID已存储（字符串类型）：" + client.global.get("testActivityId"));
+%}
+
+### 2. 获取待编辑活动详情（使用整数ID，无类型转换问题）
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200) {
+        console.log("获取活动详情成功！活动名称：" + response.body.data.activityName);
+    } else {
+        console.log("获取活动详情失败：" + response.body.message);
+    }
+%}
+
+### 3. 正常编辑活动（所有字段合法，整数ID）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "数学建模进阶讲座（修订版）",
+  "holdStartTime": "2025-12-25T15:00:00",
+  "holdEndTime": "2025-12-25T18:00:00",
+  "location": "图书馆一楼学术报告厅（改）",
+  "scoreType": "1.4.人文与科学素养",
+  "score": 6.00,
+  "volunteerHours": 1.5,
+  "activityDesc": "本次数学建模进阶讲座修订版，新增竞赛真题解析环节，邀请资深导师现场指导，涵盖建模工具使用、论文写作技巧等核心内容，参与即可获得德育加分及志愿时长认证！"
+}
+
+> {%
+    if (response.body.code === 200) {
+        console.log("活动编辑成功！更新后活动ID：" + response.body.data.activityId);
+    } else {
+        console.log("活动编辑失败：" + response.body.message);
+    }
+%}
+
+### 4. 异常测试1：编辑不存在的活动（无效整数ID）
+PUT http://localhost:8080/api/admin/activities/9999
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "无效活动编辑测试",
+  "holdStartTime": "2025-12-30T10:00:00",
+  "holdEndTime": "2025-12-30T12:00:00",
+  "location": "测试地点",
+  "score": 3.00,
+  "volunteerHours": 1.0,
+  "activityDesc": "编辑不存在的活动"
+}
+
+### 5. 异常测试2：权限不足（跨部门编辑活动）- 步骤1：登录跨部门管理员
+// 计算机学院管理员（部门ID=1），无权限编辑外国语学院活动（部门ID=2）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025001",
+  "password": "Admin123"
+}
+
+> {%
+    client.global.set("crossDeptAdminToken", response.body.data.token);
+    console.log("跨部门管理员Token已存储：" + client.global.get("crossDeptAdminToken"));
+%}
+
+### 5. 异常测试2：权限不足（跨部门编辑活动）- 步骤2：尝试跨部门编辑
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{crossDeptAdminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "跨部门编辑测试",
+  "holdStartTime": "2025-12-25T15:00:00",
+  "holdEndTime": "2025-12-25T18:00:00",
+  "location": "测试地点",
+  "score": 6.00,
+  "volunteerHours": 1.5,
+  "activityDesc": "跨部门编辑无权限测试"
+}
+
+### 6. 异常测试3：时间逻辑错误（开始时间早于报名截止）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "时间逻辑错误测试（开始时间早于报名截止）",
+  "holdStartTime": "2025-06-08T15:00:00",
+  "holdEndTime": "2025-06-08T18:00:00",
+  "location": "图书馆报告厅",
+  "score": 5.00,
+  "volunteerHours": 0.5,
+  "activityDesc": "活动开始时间早于报名截止时间的错误测试"
+}
+
+### 7. 异常测试4：时间逻辑错误（结束时间早于开始）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "时间逻辑错误测试（结束时间早于开始）",
+  "holdStartTime": "2025-12-25T18:00:00",
+  "holdEndTime": "2025-12-25T15:00:00",
+  "location": "图书馆报告厅",
+  "score": 5.00,
+  "volunteerHours": 0.5,
+  "activityDesc": "活动结束时间早于开始时间的错误测试"
+}
+
+### 8. 异常测试5：时间逻辑错误（开始时间早于当前）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "时间逻辑错误测试（开始时间早于当前）",
+  "holdStartTime": "2024-12-25T15:00:00",
+  "holdEndTime": "2024-12-25T18:00:00",
+  "location": "图书馆报告厅",
+  "score": 5.00,
+  "volunteerHours": 0.5,
+  "activityDesc": "活动开始时间早于当前时间的错误测试"
+}
+
+### 9. 异常测试6：缺少必填字段（活动名称为空）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "",
+  "holdStartTime": "2025-12-25T15:00:00",
+  "holdEndTime": "2025-12-25T18:00:00",
+  "location": "图书馆报告厅",
+  "score": 5.00,
+  "volunteerHours": 0.5,
+  "activityDesc": "缺少活动名称的错误测试"
+}
+
+### 10. 异常测试7：缺少必填字段（活动介绍为空）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "数学建模进阶讲座（修订版）",
+  "holdStartTime": "2025-12-25T15:00:00",
+  "holdEndTime": "2025-12-25T18:00:00",
+  "location": "图书馆报告厅",
+  "score": 5.00,
+  "volunteerHours": 0.5,
+  "activityDesc": ""
+}

@@ -2,6 +2,7 @@ package com.example.springboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.springboot.dto.ActivityEditDTO;
 import com.example.springboot.dto.ActivityPublishDTO;
 import com.example.springboot.entity.Activity;
 import com.example.springboot.enums.ActivityStatusEnum;
@@ -23,6 +24,7 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         );
     }
 
+    //管理员发布新活动
     @Override
     public Activity publishActivity(ActivityPublishDTO activityDTO, Long departmentId) {
         // 验证时间逻辑
@@ -102,4 +104,58 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
                         .eq(Activity::getDepartmentId, departmentId)
         );
     }
+
+
+    //管理员编辑修改活动
+    @Override
+    public Activity editActivity(Long activityId, ActivityEditDTO activityEditDTO, Long departmentId) {
+        // 1. 查询活动是否存在
+        Activity activity = baseMapper.selectById(activityId);
+        if (activity == null) {
+            throw new IllegalArgumentException("活动不存在");
+        }
+
+        // 2. 验证权限：只有活动所属部门的管理员才能编辑
+        if (!activity.getDepartmentId().equals(departmentId)) {
+            throw new IllegalArgumentException("没有权限编辑此活动");
+        }
+
+        // 3. 验证时间逻辑
+        validateEditTime(activityEditDTO, activity);
+
+        // 4. 更新活动信息
+        activity.setActivityName(activityEditDTO.getActivityName());
+        activity.setHoldStartTime(activityEditDTO.getHoldStartTime());
+        activity.setHoldEndTime(activityEditDTO.getHoldEndTime());
+        activity.setLocation(activityEditDTO.getLocation());
+        activity.setScoreType(activityEditDTO.getScoreType());
+        activity.setScore(activityEditDTO.getScore());
+        activity.setVolunteerHours(activityEditDTO.getVolunteerHours());
+        activity.setActivityDesc(activityEditDTO.getActivityDesc());
+
+        // 5. 保存更新
+        baseMapper.updateById(activity);
+        return activity;
+    }
+
+    // 添加时间验证方法
+    private void validateEditTime(ActivityEditDTO dto, Activity activity) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 活动开始时间必须在当前时间之后
+        if (dto.getHoldStartTime().isBefore(now)) {
+            throw new IllegalArgumentException("活动开始时间不能早于当前时间");
+        }
+
+        // 活动结束时间必须在活动开始时间之后
+        if (dto.getHoldEndTime().isBefore(dto.getHoldStartTime())) {
+            throw new IllegalArgumentException("活动结束时间不能早于活动开始时间");
+        }
+
+        // 活动开始时间必须在报名截止时间之后
+        if (dto.getHoldStartTime().isBefore(activity.getApplyDeadline())) {
+            throw new IllegalArgumentException("活动开始时间不能早于报名截止时间");
+        }
+    }
+
 }

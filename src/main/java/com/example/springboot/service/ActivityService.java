@@ -1,6 +1,7 @@
 package com.example.springboot.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.springboot.dto.ActivityEditDTO;
 import com.example.springboot.dto.ActivityPublishDTO;
 import com.example.springboot.entity.Activity;
 import java.util.List;
@@ -13,4 +14,6 @@ public interface ActivityService extends IService<Activity> {
     Activity publishActivity(ActivityPublishDTO activityDTO, Long departmentId);
     // 新增：统计部门发布的活动数量
     long countByDepartmentId(Long departmentId);
+    //编辑活动信息
+    Activity editActivity(Long activityId, ActivityEditDTO activityEditDTO, Long departmentId);
 }
