@@ -35,16 +35,14 @@ public class DepartmentSearchController {
 
     /**
      * 2. 搜索结果分页接口（用户点击“搜索”时调用）
-     * 请求示例：http://localhost:8080/api/department/search?keyword=计算机&pageNum=1&pageSize=10
+     * 请求示例：http://localhost:8080/api/department/search?keyword=计算机
      */
     @GetMapping("/search")
-    public ResponseEntity<Page<DepartmentListDTO>> searchDepartmentList(
-            @RequestParam String keyword,
-            @RequestParam(required = false) Integer pageNum,
-            @RequestParam(required = false) Integer pageSize
+    public ResponseEntity<List<DepartmentListDTO>> searchDepartmentList(
+            @RequestParam String keyword
     ) {
-        Page<DepartmentListDTO> departmentPage = departmentSearchService.searchDepartmentList(keyword, pageNum, pageSize);
-        return ResponseEntity.ok(departmentPage);
+        List<DepartmentListDTO> departmentList = departmentSearchService.searchDepartmentList(keyword);
+        return ResponseEntity.ok(departmentList);
     }
 
     /**

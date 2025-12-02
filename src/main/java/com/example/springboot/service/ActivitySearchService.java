@@ -15,7 +15,7 @@ public interface ActivitySearchService {
     List<ActivitySuggestDTO> getSearchSuggest(String keyword);
 
     // 2. 搜索结果分页：根据关键词返回活动列表（带分页）
-    Page<ActivityListDTO> searchActivityList(String keyword, Integer pageNum, Integer pageSize);
+    List<ActivityListDTO> searchActivityList(String keyword);
 
     // 3. 活动详情：根据活动ID返回完整信息
     ActivityDetailDTO getActivityDetail(Long activityId);

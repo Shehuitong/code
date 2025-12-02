@@ -64,37 +64,24 @@ public class DepartmentSearchServiceImpl extends ServiceImpl<DepartmentMapper, D
      * 2. 搜索结果分页：返回匹配的部门列表（带分页）
      */
     @Override
-    public Page<DepartmentListDTO> searchDepartmentList(String keyword, Integer pageNum, Integer pageSize) {
+    public List<DepartmentListDTO> searchDepartmentList(String keyword) {
         // 参数校验：关键词为空抛异常
         if (!StringUtils.hasText(keyword)) {
             throw new IllegalArgumentException("搜索关键词不能为空！");
         }
-        // 分页参数默认值：页码1，每页10条
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
 
-        // 1. 构造查询条件：模糊匹配 + 按创建时间倒序
+        // 构造查询条件：模糊匹配 + 按创建时间倒序
         QueryWrapper<Department> wrapper = new QueryWrapper<>();
-        wrapper.and(i -> i.like("department_name", keyword.trim())
-                        .or().like("department_college", keyword.trim())
-                        .or().like("description", keyword.trim()))
-                .orderByDesc("create_time");
+        wrapper.and(i -> i.like("department_name", keyword.trim()))
+                .orderByAsc("department_id");
 
-        // 2. 分页查询
-        Page<Department> departmentPage = departmentMapper.selectPage(
-                new Page<>(pageNum, pageSize),
-                wrapper
-        );
+        // 查询所有匹配的部门
+        List<Department> departments = departmentMapper.selectList(wrapper);
 
-        // 3. 实体转DTO
-        Page<DepartmentListDTO> listDTOPage = new Page<>();
-        BeanUtils.copyProperties(departmentPage, listDTOPage);
-        List<DepartmentListDTO> dtoList = departmentPage.getRecords().stream()
-                .map(this::convertToListDTO)
+        // 转换为DTO并加载活动信息（包括已下架）
+        return departments.stream()
+                .map(this::convertToListDTOWithActivities)
                 .collect(Collectors.toList());
-        listDTOPage.setRecords(dtoList);
-
-        return listDTOPage;
     }
 
     /**
@@ -108,9 +95,11 @@ public class DepartmentSearchServiceImpl extends ServiceImpl<DepartmentMapper, D
             throw new BusinessErrorException("部门不存在");
         }
 
-        // 2. 查询部门举办的活动（假设Activity表有department_id字段）
+        // 2. 查询部门举办的活动（直接在当前方法写LambdaQueryWrapper，无需依赖ActivityService的自定义方法）
         List<Activity> activities = activityService.list(new LambdaQueryWrapper<Activity>()
-                .eq(Activity::getDepartmentId, departmentId));
+                .eq(Activity::getDepartmentId, departmentId) // 匹配部门ID
+                .orderByDesc(Activity::getCreatedTime) // 保持原有的按创建时间倒序
+        );
 
         activities.forEach(activity -> activity.setDepartment(department));
 
@@ -126,11 +115,18 @@ public class DepartmentSearchServiceImpl extends ServiceImpl<DepartmentMapper, D
                 .eq(Department::getDepartmentId, departmentId));
     }
     /**
-     * 工具方法：Department → DepartmentListDTO
+     * 工具方法：Department → DepartmentListDTO（包含所有活动）
      */
-    private DepartmentListDTO convertToListDTO(Department department) {
+    private DepartmentListDTO convertToListDTOWithActivities(Department department) {
         DepartmentListDTO dto = new DepartmentListDTO();
         dto.setDepartment(department);
+
+        // 查询该部门的所有活动（包括已下架）
+        List<Activity> activities = activityService.getByDepartmentId(department.getDepartmentId());
+        activities.forEach(activity -> activity.setDepartment(department));
+        dto.setActivities(activities);
+
+
         return dto;
     }
 }

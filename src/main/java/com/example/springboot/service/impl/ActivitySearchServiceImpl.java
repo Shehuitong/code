@@ -64,31 +64,22 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
      * 2. 搜索结果分页：返回活动名称包含关键词的活动列表（带分页）
      */
     @Override
-    public Page<ActivityListDTO> searchActivityList(String keyword, Integer pageNum, Integer pageSize) {
+    public List<ActivityListDTO> searchActivityList(String keyword) {
         if (!StringUtils.hasText(keyword)) {
             throw new IllegalArgumentException("搜索关键词不能为空！");
         }
-        pageNum = pageNum == null ? 1 : pageNum;
-        pageSize = pageSize == null ? 10 : pageSize;
+
         String trimKeyword = keyword.trim();
 
-        // 分页查询（关联部门）
-        Page<Activity> page = new Page<>(pageNum, pageSize);
-        IPage<Activity> activityPage = activityMapper.selectActivityPageWithDept(
-                page,
+        // 2. 全量查询（核心修改：移除分页，调用新的全量查询Mapper方法）
+        List<Activity> activityList = activityMapper.selectAllActivityWithDeptByKeyword(
                 trimKeyword,
                 ActivityStatusEnum.OFFLINE // 排除下架活动
         );
 
-        // 转换为DTO（原有逻辑不变）
-        Page<ActivityListDTO> listDTOPage = new Page<>();
-        BeanUtils.copyProperties(activityPage, listDTOPage);
-        List<ActivityListDTO> dtoList = activityPage.getRecords().stream()
+        return activityList.stream()
                 .map(this::convertToListDTO)
                 .collect(Collectors.toList());
-        listDTOPage.setRecords(dtoList);
-
-        return listDTOPage;
     }
 
     /**

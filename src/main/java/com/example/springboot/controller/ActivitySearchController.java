@@ -38,13 +38,10 @@ public class ActivitySearchController {
      * 请求示例：http://localhost:8080/api/activity/search?keyword=竞赛&pageNum=1&pageSize=10
      */
     @GetMapping("/search")
-    public ResponseEntity<Page<ActivityListDTO>> searchActivityList(
-            @RequestParam String keyword, // 必传：搜索关键词
-            @RequestParam(required = false) Integer pageNum, // 可选：页码
-            @RequestParam(required = false) Integer pageSize // 可选：每页条数
-    ) {
-        Page<ActivityListDTO> activityPage = activitySearchService.searchActivityList(keyword, pageNum, pageSize);
-        return ResponseEntity.ok(activityPage); // 200 OK + 分页结果
+    public ResponseEntity<List<ActivityListDTO>> searchActivityList(
+            @RequestParam("keyword") String keyword) {
+        List<ActivityListDTO> activityList = activitySearchService.searchActivityList(keyword);
+        return ResponseEntity.ok(activityList);
     }
 
     /**

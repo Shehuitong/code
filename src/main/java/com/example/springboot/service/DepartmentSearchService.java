@@ -16,8 +16,8 @@ public interface DepartmentSearchService extends IService<Department> {
     // 1. 搜索联想：根据关键词返回部门名称列表
     List<DepartmentSuggestDTO> getSearchSuggest(String keyword);
 
-    // 2. 搜索结果分页：根据关键词返回部门列表（带分页）
-    Page<DepartmentListDTO> searchDepartmentList(String keyword, Integer pageNum, Integer pageSize);
+    // 2. 搜索结果分页：根据关键词返回部门列表
+    List<DepartmentListDTO> searchDepartmentList(String keyword);
 
     // 3. 部门详情：根据部门ID返回完整信息
     DepartmentDetailDTO getDepartmentDetail(Long departmentId);
