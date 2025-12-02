@@ -11,4 +11,6 @@ public interface ActivityService extends IService<Activity> {
 
     // 发布新活动
     Activity publishActivity(ActivityPublishDTO activityDTO, Long departmentId);
+    // 新增：统计部门发布的活动数量
+    long countByDepartmentId(Long departmentId);
 }

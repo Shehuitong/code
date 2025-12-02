@@ -238,4 +238,18 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
         }
         return baseMapper.countByUserIdAndTargetType(userId, UserFavorites.TYPE_ACTIVITY);
     }
+
+    @Override
+    public int countDepartmentFollowers(Long departmentId) {
+        // 验证部门是否存在
+        if (departmentService.getById(departmentId) == null) {
+            throw new BusinessErrorException("部门不存在");
+        }
+        // 统计状态为"已收藏"的用户数（去重）
+        return baseMapper.countByTargetIdAndType(
+                departmentId,
+                UserFavorites.TYPE_DEPARTMENT,
+                UserFavorites.STATUS_FAVORITED
+        );
+    }
 }

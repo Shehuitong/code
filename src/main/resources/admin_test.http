@@ -72,3 +72,12 @@ Content-Type: application/json
   "department_name": "体育部",
   "description": "负责体育相关专业教学与管理"
 }
+
+
+###查看当前部门关注人数
+GET http://localhost:8080/api/department/follow-count
+Authorization: Bearer {{adminToken}}
+
+###查看部门发布活动数
+GET http://localhost:8080/api/admin/activities/count
+Authorization: Bearer {{adminToken}}

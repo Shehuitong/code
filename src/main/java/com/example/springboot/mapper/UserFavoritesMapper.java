@@ -46,4 +46,15 @@ public interface UserFavoritesMapper extends BaseMapper<UserFavorites> {
             @Param("targetId") Long targetId,
             @Param("targetType") String targetType  // 改为String类型，与实体类一致
     );
+
+    @Select("SELECT COUNT(DISTINCT user_id) FROM user_favorites " +
+            "WHERE target_id = #{departmentId} " +
+            "AND target_type = #{targetType} " +
+            "AND favorite_status = #{status} " +
+            "AND is_deleted = 0")
+    Integer countByTargetIdAndType(
+            @Param("departmentId") Long departmentId,
+            @Param("targetType") String targetType,
+            @Param("status") String status
+    );
 }

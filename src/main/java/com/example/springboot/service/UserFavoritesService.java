@@ -29,4 +29,10 @@ public interface UserFavoritesService extends IService<UserFavorites> {
 
     // 取消收藏（参数：目标ID、类型）
     void cancelFavorite(Long targetId, String targetType);
+    /**
+     * 统计部门的关注人数
+     * @param departmentId 部门ID
+     * @return 关注人数
+     */
+    int countDepartmentFollowers(Long departmentId);
 }

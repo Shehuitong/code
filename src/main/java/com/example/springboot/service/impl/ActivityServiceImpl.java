@@ -94,4 +94,12 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
             throw new IllegalArgumentException("报名截止截止时间不能晚于活动开始时间");
         }
     }
+    // 新增：实现统计部门活动数的方法
+    @Override
+    public long countByDepartmentId(Long departmentId) {
+        return baseMapper.selectCount(
+                new LambdaQueryWrapper<Activity>()
+                        .eq(Activity::getDepartmentId, departmentId)
+        );
+    }
 }

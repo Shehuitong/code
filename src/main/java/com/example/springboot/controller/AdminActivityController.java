@@ -10,10 +10,7 @@ import com.example.springboot.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/activities")
@@ -50,5 +47,26 @@ public class AdminActivityController {
         // 发布活动（此时activityPublishDTO类型正确，可正常调用）
         Activity activity = activityService.publishActivity(activityPublishDTO, admin.getDepartmentId());
         return Result.success(activity);
+    }
+    // 新增：查看部门发布活动数的接口
+    @GetMapping("/count")
+    public Result<Long> getDepartmentActivityCount(HttpServletRequest request) {
+        // 从Token中获取管理员ID
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return Result.error("未授权：请传递有效的Token");
+        }
+        String token = authHeader.substring(7);
+        Long adminId = jwtUtil.getUserId(token);
+
+        // 获取管理员所属部门ID
+        Admin admin = adminService.getById(adminId);
+        if (admin == null) {
+            return Result.error("管理员不存在");
+        }
+
+        // 统计该部门发布的活动数量
+        long count = activityService.countByDepartmentId(admin.getDepartmentId());
+        return Result.success(count);
     }
 }
