@@ -19,4 +19,8 @@ public interface ActivitySearchService {
 
     // 3. 活动详情：根据活动ID返回完整信息
     ActivityDetailDTO getActivityDetail(Long activityId);
+    /**
+     * 4. 获取所有未下架活动（带分页和部门信息）
+     */
+    List<ActivityDetailDTO> getAllActiveActivities();
 }

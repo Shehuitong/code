@@ -58,4 +58,13 @@ public class ActivitySearchController {
         ActivityDetailDTO detailDTO = activitySearchService.getActivityDetail(activityId);
         return ResponseEntity.ok(detailDTO); // 200 OK + 详情信息
     }
+    /**
+     * 4：获取所有未下架活动（无分页）
+     * 请求示例：http://localhost:8080/api/activity/all
+     */
+    @GetMapping("/all") // 若前端请求是"/api/activities/all"，则此处保持"/all"，同时控制器@RequestMapping改为"/api/activities"
+    public ResponseEntity<List<ActivityDetailDTO>> getAllActiveActivities() {
+        List<ActivityDetailDTO> allActivities = activitySearchService.getAllActiveActivities();
+        return ResponseEntity.ok(allActivities); // 返回所有活动列表
+    }
 }

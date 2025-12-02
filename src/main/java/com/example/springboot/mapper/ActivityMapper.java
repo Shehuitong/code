@@ -138,7 +138,7 @@ public interface ActivityMapper extends BaseMapper<Activity> {
         LEFT JOIN Department d ON a.department_id = d.department_id
         WHERE a.activity_name LIKE CONCAT('%', #{keyword}, '%')
           AND a.status != #{offlineStatus}
-        ORDER BY a.created_time DESC
+        ORDER BY a.activity_id ASC
         </script>
     """)
     @Results({
@@ -177,4 +177,48 @@ public interface ActivityMapper extends BaseMapper<Activity> {
             @Param("keyword") String keyword,
             @Param("offlineStatus") ActivityStatusEnum offlineStatus
     );
+
+    /**
+     * 查询所有未下架活动（关联部门信息）
+     */
+    @Select("""
+    SELECT a.*, d.*
+    FROM Activity a
+    LEFT JOIN Department d ON a.department_id = d.department_id
+    WHERE a.status != #{offlineStatus}
+    ORDER BY a.activity_id ASC
+""")
+    @Results({
+            // 活动字段映射（同已有配置）
+            @Result(column = "activity_id", property = "activityId"),
+            @Result(column = "activity_name", property = "activityName"),
+            @Result(column = "department_id", property = "departmentId"),
+            @Result(column = "activity_desc", property = "activityDesc"),
+            @Result(column = "hold_start_time", property = "holdStartTime"),
+            @Result(column = "hold_end_time", property = "holdEndTime"),
+            @Result(column = "location", property = "location"),
+            @Result(column = "apply_college", property = "applyCollege"),
+            @Result(column = "apply_grade", property = "applyGrade"),
+            @Result(column = "score_type", property = "scoreType"),
+            @Result(column = "score", property = "score"),
+            @Result(column = "max_people", property = "maxPeople"),
+            @Result(column = "remaining_people", property = "remainingPeople"),
+            @Result(column = "apply_count", property = "applyCount"),
+            @Result(column = "apply_deadline", property = "applyDeadline"),
+            @Result(column = "status", property = "status"),
+            @Result(column = "created_time", property = "createdTime"),
+            @Result(column = "apply_time", property = "applyTime"),
+            @Result(column = "volunteer_hours", property = "volunteerHours"),
+            @Result(column = "follower_count", property = "followerCount"),
+            @Result(column = "hold_college", property = "holdCollege"),
+
+            // 部门字段映射
+            @Result(column = "department_id", property = "department.departmentId"),
+            @Result(column = "department_name", property = "department.departmentName"),
+            @Result(column = "description", property = "department.description"),
+            @Result(column = "avatar", property = "department.avatar"),
+            @Result(column = "department_college", property = "department.departmentCollege")
+    })
+    List<Activity> selectAllActivityWithDept(@Param("offlineStatus") ActivityStatusEnum offlineStatus);
+
 }

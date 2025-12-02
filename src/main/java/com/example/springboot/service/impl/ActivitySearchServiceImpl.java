@@ -122,6 +122,19 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
         return detailDTO;
     }
 
+    @Override
+    public List<ActivityDetailDTO> getAllActiveActivities() {
+        // 查询所有未下架活动（关联部门信息），无分页
+        List<Activity> activityList = activityMapper.selectAllActivityWithDept(
+                ActivityStatusEnum.OFFLINE // 排除下架活动
+        );
+
+        // 转换为DTO并封装部门信息
+        return activityList.stream()
+                .map(this::convertToDetailDTO)
+                .collect(Collectors.toList());
+    }
+
     /**
      * 工具方法：Activity → ActivityListDTO（确保复制报名时间等字段）
      */
@@ -140,5 +153,22 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
             dto.setDepartment(defaultDept);
         }
         return dto;
+    }
+    private ActivityDetailDTO convertToDetailDTO(Activity activity) {
+        ActivityDetailDTO detailDTO = new ActivityDetailDTO();
+        BeanUtils.copyProperties(activity, detailDTO);
+
+        // 设置部门信息（兼容无关联部门的场景）
+        if (activity.getDepartment() != null) {
+            detailDTO.setDepartment(activity.getDepartment());
+            detailDTO.setDepartmentName(activity.getDepartment().getDepartmentName());
+        } else {
+            Department defaultDept = new Department();
+            defaultDept.setDepartmentId(0L);
+            defaultDept.setDepartmentName("未知部门");
+            detailDTO.setDepartment(defaultDept);
+            detailDTO.setDepartmentName("未知部门");
+        }
+        return detailDTO;
     }
 }
