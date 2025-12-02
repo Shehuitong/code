@@ -228,7 +228,11 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
         if (userService.getById(userId) == null) {
             throw new BusinessErrorException("用户不存在");
         }
-        return baseMapper.countByUserIdAndTargetType(userId, UserFavorites.TYPE_DEPARTMENT);
+        return baseMapper.countByUserIdAndTargetType(
+                userId,
+                UserFavorites.TYPE_DEPARTMENT,
+                UserFavorites.STATUS_FAVORITED
+        );
     }
 
     @Override
@@ -236,7 +240,11 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
         if (userService.getById(userId) == null) {
             throw new BusinessErrorException("用户不存在");
         }
-        return baseMapper.countByUserIdAndTargetType(userId, UserFavorites.TYPE_ACTIVITY);
+        return baseMapper.countByUserIdAndTargetType(
+                userId,
+                UserFavorites.TYPE_ACTIVITY,
+                UserFavorites.STATUS_FAVORITED
+        );
     }
 
     @Override

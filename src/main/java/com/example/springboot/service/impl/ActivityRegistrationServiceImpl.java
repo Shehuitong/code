@@ -85,7 +85,7 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         // 2. 查询用户「已报名」状态的报名记录（状态码1）
         LambdaQueryWrapper<ActivityRegistration> registrationWrapper = new LambdaQueryWrapper<ActivityRegistration>()
                 .eq(ActivityRegistration::getUserId, userId) // 类型一致，无需转换
-                .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED);
+                .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED.getCode());
 
         List<ActivityRegistration> registrationList = baseMapper.selectList(registrationWrapper);
         if (registrationList.isEmpty()) {
@@ -291,7 +291,8 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
     @Override
     public List<ActivityRegistrationDTO> getUserRegistrationDTOs(Long currentUserId) {
         LambdaQueryWrapper<ActivityRegistration> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ActivityRegistration::getUserId, currentUserId);
+        queryWrapper.eq(ActivityRegistration::getUserId, currentUserId)
+                .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED);
         List<ActivityRegistration> registrations = baseMapper.selectList(queryWrapper);
         if (registrations.isEmpty()) {
             return List.of();
@@ -437,7 +438,8 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         // 查询报名记录
         LambdaQueryWrapper<ActivityRegistration> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActivityRegistration::getUserId, userId)
-                .eq(ActivityRegistration::getActivityId, activityId);
+                .eq(ActivityRegistration::getActivityId, activityId)
+                .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED);
         ActivityRegistration registration = baseMapper.selectOne(queryWrapper);
 
         if (registration == null) {

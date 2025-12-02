@@ -106,13 +106,13 @@ CREATE TABLE user_favorites (
 INSERT INTO user_favorites (user_id, target_id, target_type, favorite_status, create_time, is_deleted)
 VALUES
     -- 用户ID=3 收藏 部门ID=1（外国语学院-学生会）
-    (1, 2, 'DEPARTMENT', '已收藏', '2025-11-20 10:30:00', 0),
+    (1, 2, 'DEPARTMENT', '已取消', '2025-11-20 10:30:00', 0),
     -- 用户ID=3 收藏 部门ID=3（外国语学院-志愿者协会）
-    (2, 2, 'DEPARTMENT', '已收藏', '2025-11-21 14:15:00', 0),
+    (1, 3, 'DEPARTMENT', '已收藏', '2025-11-21 14:15:00', 0),
     -- 用户ID=3 关注 活动ID=2（英语演讲比赛）
-    (1, 2, 'ACTIVITY', '已取消', '2025-11-22 09:45:00', 0),
+    (1, 2, 'ACTIVITY', '已收藏', '2025-11-22 09:45:00', 0),
     -- 用户ID=3 关注 活动ID=4（跨文化交流沙龙）
-    (1, 4, 'ACTIVITY', '已收藏', '2025-11-23 16:20:00', 0),
+    (1, 4, 'ACTIVITY', '已取消', '2025-11-23 16:20:00', 0),
     -- 用户ID=3 取消收藏 部门ID=5（已取消状态）
     (3, 2, 'DEPARTMENT', '已收藏', '2025-11-24 11:00:00', 0),
     -- 用户ID=2 收藏 部门ID=1（其他用户的收藏数据，用于测试权限隔离）
@@ -205,7 +205,7 @@ VALUES
     ('1', 1, '已报名'),
     ('2', 1, '已报名'),
 ('2', 2, '已取消'),
-    ('1', 2, '已报名');
+    ('1', 2, '已取消');
 
 CREATE TABLE IF NOT EXISTS notification (
                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,

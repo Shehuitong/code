@@ -12,12 +12,17 @@ import java.util.List;
 @Mapper
 public interface UserFavoritesMapper extends BaseMapper<UserFavorites> {
     // 统计用户某类型收藏数（参数改为 targetType，数据库字段 target_type）
-    @Select("SELECT COUNT(*) FROM user_favorites WHERE user_id = #{userId} AND target_type = #{targetType}")
+    @Select("SELECT COUNT(*) " +
+            "FROM user_favorites " +
+            "WHERE user_id = #{userId} " +
+            "  AND target_type = #{targetType} " +
+            "  AND favorite_status = #{status} " + // String匹配String，无类型问题
+            "  AND is_deleted = 0") // 加上逻辑删除过滤（可选但建议加，避免统计已删除记录）
     Integer countByUserIdAndTargetType(
             @Param("userId") Long userId,
-            @Param("targetType") String targetType
+            @Param("targetType") String targetType,
+            @Param("status") String status // 保持String，与实体类一致
     );
-
     // 注解SQL：查询用户某类型收藏记录（直接写SQL，无需XML）
     @Select("SELECT * FROM user_favorites WHERE user_id = #{userId} AND target_type = #{targetType} ORDER BY create_time DESC")
     // 根据用户ID和目标类型查询收藏记录
@@ -31,11 +36,11 @@ public interface UserFavoritesMapper extends BaseMapper<UserFavorites> {
         );
     }
     // 1. 修复查询已收藏方法的参数类型和SQL字段
-    @Select("select * from user_favorites where user_id = #{userId} and target_id = #{targetId} and target_type = #{targetType} limit 1")
+    @Select("select * from user_favorites where user_id = #{userId} and target_id = #{targetId} and target_type = #{targetType} and favorite_status = #{status} limit 1")
     UserFavorites selectByUserIdTargetIdAndType(
             @Param("userId") Long userId,
             @Param("targetId") Long targetId,
-            @Param("targetType") String targetType,  // 改为String类型，与实体类一致
+            @Param("targetType") String targetType,
             @Param("status") String status
     );
 
@@ -53,7 +58,7 @@ public interface UserFavoritesMapper extends BaseMapper<UserFavorites> {
             "AND favorite_status = #{status} " +
             "AND is_deleted = 0")
     Integer countByTargetIdAndType(
-            @Param("departmentId") Long departmentId,
+            @Param("targetId") Long departmentId,
             @Param("targetType") String targetType,
             @Param("status") String status
     );

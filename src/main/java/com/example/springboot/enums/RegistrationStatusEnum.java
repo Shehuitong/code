@@ -20,6 +20,7 @@ public enum RegistrationStatusEnum {
         this.desc = desc;
     }
 
+
     // 根据数据库存储的中文值反向获取枚举
     public static RegistrationStatusEnum getByDbValue(String dbValue) {
         for (RegistrationStatusEnum status : values()) {

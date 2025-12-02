@@ -59,7 +59,7 @@ Content-Disposition: form-data; name="departmentId"
 ###
 
 
-###6. 查看部门详情
+### 6. 查看部门详情
 GET http://localhost:8080/api/department/detail?departmentId=1
 Content-Type: application/x-www-form-urlencoded
 

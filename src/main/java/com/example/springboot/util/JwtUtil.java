@@ -67,7 +67,8 @@ public class JwtUtil {
     }
 
     private Claims parseToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
+        // 解析时也使用UTF-8字符集，与生成时保持一致
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
