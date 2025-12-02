@@ -12,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.charset.StandardCharsets;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
@@ -36,8 +39,17 @@ public class AdminController {
             return Result.error("未授权：请传递有效的 Token");
         }
         String token = authHeader.substring(7);
-        Long currentAdminId = jwtUtil.getUserId(token); // 假设管理员ID也存在 Token 中
 
+        // 🌟 关键：先处理编码，再解析Token（顺序不能反！）
+        token = new String(token.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+
+        // 再用处理后的Token解析管理员ID
+        Long currentAdminId;
+        try {
+            currentAdminId = jwtUtil.getUserId(token); // 现在解析的是编码正确的Token
+        } catch (Exception e) {
+            return Result.error("Token 无效或已过期");
+        }
         AdminPersonalInfoDTO adminInfo = adminService.getAdminPersonalInfo(currentAdminId);
         return Result.success(adminInfo);
     }

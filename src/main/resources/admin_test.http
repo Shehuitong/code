@@ -40,18 +40,23 @@ Content-Type: image/png
 
 ###5. 部门上传头像
 POST http://localhost:8080/api/department/avatar
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+###
+# curl -X POST "http://localhost:8080/api/department/avatar" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoiRzIwMjUwMDIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjQ2MDYwMzUsImV4cCI6MTc2NDYxMzIzNX0.zZx4Eh_JCU2390erCnKP5pm6Rby163hBX8qbe1egkoY" -F "file=@C:\Users\AK\Pictures\Screenshots\屏幕截图 2025-12-01 224312.png" -F "departmentId=1" -v
+POST http://localhost:8080/api/department/avatar
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjIsInVzZXJuYW1lIjoiRzIwMjUwMDIiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NjQ2MDYwMzUsImV4cCI6MTc2NDYxMzIzNX0.zZx4Eh_JCU2390erCnKP5pm6Rby163hBX8qbe1egkoY
+Content-Type: multipart/form-data; boundary=WebAppBoundary
 
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="deptId"
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="屏幕截图 2025-12-01 224312.png"
+
+< C:\Users\AK\Pictures\Screenshots\屏幕截图 2025-12-01 224312.png
+--WebAppBoundary
+Content-Disposition: form-data; name="departmentId"
 
 1
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file"; filename="dept_avatar.png"
-Content-Type: image/png
+--WebAppBoundary--
 
-@/path/to/local/dept_avatar.png
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
+###
 
 
 ###6. 查看部门详情
@@ -63,7 +68,7 @@ PUT http://localhost:8080/api/department/update
 Content-Type: application/json
 
 {
-  "deptId": 1,
+  "departmentId": 1,
   "department_name": "体育部",
   "description": "负责体育相关专业教学与管理"
 }

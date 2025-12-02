@@ -2,11 +2,14 @@ package com.example.springboot.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 
 @Component
@@ -25,17 +28,24 @@ public class JwtUtil {
      * @param role 角色标识（"admin"或"user"）
      * @return JWT Token
      */
-    public String generateToken(Long userId, String username, String role) {  // 去掉static
-        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
-        return Jwts.builder()
-                .claim("userId", userId)
-                .claim("username", username)
-                .claim("role", role)  // 新增角色声明
+    public String generateToken(Long userId, String username, String role) {
+        // 1. 密钥强制用UTF-8编码（避免系统默认编码生成非法字符）
+        Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+        // 2. 生成Token（仅含合法字段，无特殊字符）
+        String token = Jwts.builder()
+                .claim("userId", userId) // 仅存数字（无特殊字符）
+                .claim("username", username.trim()) // 去除用户名前后隐藏空格
+                .claim("role", role.trim()) // 去除角色前后隐藏空格
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256) // 明确算法，避免默认值差异
                 .compact();
+
+        // 3. 最终过滤：确保无隐藏字符（零宽空格、换行符等）
+        return token.replaceAll("[^A-Za-z0-9_\\.-]", "");
     }
+
 
     /**
      * 从Token中获取角色
