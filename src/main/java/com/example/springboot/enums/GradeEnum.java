@@ -3,6 +3,7 @@ package com.example.springboot.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonValue; // 新增导入
 
     /**
      * 年级组合枚举（仅中文描述，与原 GradeEnum 风格完全一致）
@@ -34,6 +35,7 @@ import lombok.Getter;
 
         // 与原 GradeEnum 完全一致：仅中文描述字段，用于数据库存储和前端展示
         @EnumValue
+        @JsonValue
         private final String desc;
 
         // 与原 GradeEnum 一致的构造方法（仅接收中文描述）

@@ -1,6 +1,7 @@
 package com.example.springboot.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue; // 新增导入
 import lombok.Getter;
 
 /**
@@ -21,6 +22,7 @@ public enum HoldCollegeEnum {
     ECONOMIC_MANAGEMENT("经管学院");
 
     @EnumValue
+    @JsonValue // 新增注解，指定JSON反序列化依据desc字段
     private final String desc;
 
     HoldCollegeEnum(String desc) {

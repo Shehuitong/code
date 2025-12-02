@@ -1,0 +1,87 @@
+### 1. 管理员登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025002",
+  "password": "Admin123"
+}
+
+> {%
+    client.global.set("adminToken", response.body.data.token);
+    console.log("管理员Token已存储：" + client.global.get("adminToken"));
+%}
+
+### 2. 管理员发布活动（修改时间格式为 ISO 标准）
+POST http://localhost:8080/api/admin/activities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "跨文化交流沙龙",
+  "holdStartTime": "2025-12-20T14:00:00",
+  "holdEndTime": "2025-12-20T17:30:00",
+  "location": "外国语学院302会议室",
+  "applyGrade": "2023级+2024级+2025级",
+  "applyCollege": "外国语学院",
+  "applyTime": "2025-12-05T00:00:00",
+  "applyDeadline": "2025-12-15T23:59:59",
+  "scoreType": "1.4.人文与科学素养",
+  "score": 3.50,
+  "volunteerHours": 2.5,
+  "maxPeople": 80,
+  "activityDesc": "本次跨文化交流沙龙邀请国内外留学生共同参与，通过主题分享、小组讨论、文化展示等形式，促进不同国家、不同文化背景学生的交流与理解。活动全程提供茶歇，参与学生可获得德育加分及志愿时长认证，欢迎感兴趣的同学报名参加！",
+  "holdCollege": "外国语学院"
+}
+
+> {%
+    if (response.body.code === 200) {
+        console.log("活动发布成功！活动ID：" + response.body.data.activityId);
+        client.global.set("newActivityId", response.body.data.activityId);
+    } else {
+        console.log("活动发布失败：" + response.body.msg);
+    }
+%}
+
+### 异常测试1：缺少必填字段（活动名称）
+POST http://localhost:8080/api/admin/activities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "holdStartTime": "2025-12-20T14:00:00",
+  "holdEndTime": "2025-12-20T17:30:00",
+  "location": "外国语学院302会议室",
+  "applyGrade": "2023级+2024级+2025级",
+  "applyCollege": "外国语学院",
+  "applyTime": "2025-12-05T00:00:00",
+  "applyDeadline": "2025-12-15T23:59:59",
+  "scoreType": "1.4.人文与科学素养",
+  "score": 3.50,
+  "volunteerHours": 2.5,
+  "maxPeople": 80,
+  "activityDesc": "活动介绍...",
+  "holdCollege": "外国语学院"
+}
+
+### 异常测试2：时间逻辑错误（报名截止时间晚于活动开始时间）
+POST http://localhost:8080/api/admin/activities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "测试活动",
+  "holdStartTime": "2025-12-20T14:00:00",
+  "holdEndTime": "2025-12-20T17:30:00",
+  "location": "测试地点",
+  "applyGrade": "2024级",
+  "applyCollege": "计算机学院",
+  "applyTime": "2025-12-05T00:00:00",
+  "applyDeadline": "2025-12-21T23:59:59",
+  "scoreType": "1.1.科技竞赛",
+  "score": 2.00,
+  "volunteerHours": 1.0,
+  "maxPeople": 50,
+  "activityDesc": "时间逻辑错误的测试活动",
+  "holdCollege": "计算机学院"
+}
