@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static net.sf.jsqlparser.util.validation.metadata.NamedObject.role;
@@ -204,27 +205,36 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
                 .distinct()
                 .collect(Collectors.toList());
 
-        // 查询部门名称映射
-        Map<Long, String> deptNameMap = deptIds.isEmpty() ? new HashMap<>() :
-                departmentMapper.selectBatchIds(deptIds).stream()
-                        .collect(Collectors.toMap(
-                                Department::getDepartmentId,
-                                Department::getDepartmentName,
-                                (k1, k2) -> k1
-                        ));
+        // 构建：部门ID → 完整Department对象（而非仅名称）
+        Map<Long, Department> deptMap;
+        if (!deptIds.isEmpty()) {
+            List<Department> depts = departmentMapper.selectBatchIds(deptIds);
+            deptMap = depts.stream()
+                    .collect(Collectors.toMap(
+                            Department::getDepartmentId,
+                            Function.identity(),
+                            (k1, k2) -> k1
+                    ));
+        } else {
+            deptMap = new HashMap<>();
+        }
 
-        // 转换为ActivityDetailDTO（包含部门名称）
+        // 转换为ActivityDetailDTO（同时设置部门名称和部门对象）
         return activities.stream()
                 .map(activity -> {
                     ActivityDetailDTO dto = new ActivityDetailDTO();
                     BeanUtils.copyProperties(activity, dto);
-                    // 设置部门名称
-                    dto.setDepartmentName(deptNameMap.get(activity.getDepartmentId()));
+
+                    // 设置部门名称（兜底）
+                    Department dept = deptMap.get(activity.getDepartmentId());
+                    dto.setDepartmentName(dept != null ? dept.getDepartmentName() : "未知部门");
+                    // 设置部门对象（解决department: null问题）
+                    dto.setDepartment(dept != null ? dept : new Department());
+
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
-
     @Override
     public int countFavoriteDepartments(Long userId) {
         if (userService.getById(userId) == null) {

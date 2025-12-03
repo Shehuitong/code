@@ -63,7 +63,7 @@ public interface ActivityMapper extends BaseMapper<Activity> {
         <script>  <!-- 必须加！启用MyBatis动态SQL解析，识别foreach标签 -->
         SELECT
             a.*,
-            d.department_id AS dept_id
+            d.department_id AS dept_id, d.department_name
         FROM Activity a
         LEFT JOIN Department d 
             ON a.department_id = d.department_id
@@ -78,6 +78,7 @@ public interface ActivityMapper extends BaseMapper<Activity> {
             @Result(property = "activityId", column = "activity_id"),
             @Result(property = "activityName", column = "activity_name"),
             @Result(property = "departmentId", column = "department_id"),
+            @Result(property = "departmentName", column = "department_name"),
             // 关联部门信息映射
             @Result(
                     property = "department",

@@ -112,7 +112,7 @@ VALUES
     -- 用户ID=3 关注 活动ID=2（英语演讲比赛）
     (1, 2, 'ACTIVITY', '已收藏', '2025-11-22 09:45:00', 0),
     -- 用户ID=3 关注 活动ID=4（跨文化交流沙龙）
-    (1, 4, 'ACTIVITY', '已取消', '2025-11-23 16:20:00', 0),
+    (3, 4, 'ACTIVITY', '已收藏', '2025-11-23 16:20:00', 0),
     -- 用户ID=3 取消收藏 部门ID=5（已取消状态）
     (3, 2, 'DEPARTMENT', '已收藏', '2025-11-24 11:00:00', 0),
     -- 用户ID=2 收藏 部门ID=1（其他用户的收藏数据，用于测试权限隔离）
@@ -203,7 +203,7 @@ INSERT INTO "USER" (USERNAME, STUDENT_ID, COLLEGE, GRADE, PHONE, AVATAR_URL, PAS
 INSERT INTO USERACTIVITYREGISTRATION (ID, ACTIVITY_ID, REGISTRATION_STATUS)
 VALUES
     ('1', 1, '已报名'),
-    ('2', 1, '已报名'),
+    ('3', 1, '已报名'),
 ('2', 2, '已取消'),
     ('1', 2, '已取消');
 

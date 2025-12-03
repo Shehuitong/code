@@ -18,8 +18,8 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "account": "202200101",
-  "password": "Aa202200101"
+  "account": "202400315",
+  "password": "Aa202400315"
 }
 > {%
     client.global.set("userToken", response.body.data.token);

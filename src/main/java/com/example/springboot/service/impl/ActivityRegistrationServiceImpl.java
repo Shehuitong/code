@@ -155,7 +155,6 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
                 Department department = deptMap.get(activity.getDepartmentId());
                 log.info("活动ID：{}，通过部门ID：{} 从deptMap获取到的部门：{}", activity.getActivityId(), activity.getDepartmentId(), department); // 日志7：确认是否能获取到部门
 
-                activityDetailDTO.setDepartmentName(department != null ? department.getDepartmentName() : "未知部门");
                 registrationDTO.setActivity(activityDetailDTO);
             } else {
                 // 处理活动已删除的情况
@@ -315,6 +314,8 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         if (registrations.isEmpty()) {
             return List.of();
         }
+
+        // 1. 关联查询活动信息
         List<Long> activityIds = registrations.stream()
                 .map(ActivityRegistration::getActivityId)
                 .distinct()
@@ -323,33 +324,26 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         Map<Long, Activity> activityMap = activities.stream()
                 .collect(Collectors.toMap(Activity::getActivityId, activity -> activity, (k1, k2) -> k1));
 
-        // 新增日志1：打印活动对应的部门ID列表（验证是否有有效部门ID）
+        // 2. 关联查询部门信息（补充：保留完整Department对象，而非仅部门名称）
         List<Long> deptIds = activities.stream()
                 .map(Activity::getDepartmentId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
-        log.info("用户[{}]已报名活动对应的部门ID列表：deptIds={}", currentUserId, deptIds);
-
-        // 新增日志2：打印批量查询的部门结果（验证是否查询到部门、部门名称是否非空）
-        Map<Long, String> deptNameMap;
+        Map<Long, Department> deptMap;
         if (!deptIds.isEmpty()) {
             List<Department> depts = departmentMapper.selectBatchIds(deptIds);
-            log.info("批量查询部门结果：deptIds={}, 部门列表={}", deptIds, depts); // 看部门对象是否有值
-            deptNameMap = depts.stream()
+            deptMap = depts.stream()
                     .collect(Collectors.toMap(
                             Department::getDepartmentId,
-                            dept -> {
-                                // 新增日志3：打印每个部门的ID和名称（验证部门名称是否存在）
-                                log.info("部门ID={}, 部门名称={}", dept.getDepartmentId(), dept.getDepartmentName());
-                                return dept.getDepartmentName();
-                            },
+                            Function.identity(),
                             (k1, k2) -> k1
                     ));
         } else {
-            deptNameMap = new HashMap<>();
+            deptMap = new HashMap<>();
         }
 
+        // 3. 组装DTO（核心：补充部门名称和部门对象赋值）
         return registrations.stream()
                 .map(registration -> {
                     ActivityRegistrationDTO dto = new ActivityRegistrationDTO();
@@ -362,14 +356,19 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
                     }
 
                     ActivityDetailDTO activityDTO = new ActivityDetailDTO();
-                    BeanUtils.copyProperties(activity, activityDTO);
-                    // 这里可以加个日志，验证当前活动的departmentId和deptNameMap中的值
-                    log.info("活动ID={}, 关联部门ID={}, 匹配到的部门名称={}",
-                            activity.getActivityId(), activity.getDepartmentId(),
-                            deptNameMap.get(activity.getDepartmentId()));
-                    activityDTO.setDepartmentName(deptNameMap.getOrDefault(activity.getDepartmentId(), "未知部门"));
-                    dto.setActivity(activityDTO);
+                    BeanUtils.copyProperties(activity, activityDTO); // 复制活动基础字段（含departmentId）
 
+                    // 新增：赋值部门名称
+                    Department dept = deptMap.get(activity.getDepartmentId());
+                    if (dept != null) {
+                        activityDTO.setDepartmentName(dept.getDepartmentName()); // 部门名称赋值
+                        activityDTO.setDepartment(dept); // 关联部门对象赋值
+                    } else {
+                        activityDTO.setDepartmentName("未知部门"); // 兜底处理，避免null
+                        activityDTO.setDepartment(new Department()); // 空对象兜底（可选）
+                    }
+
+                    dto.setActivity(activityDTO);
                     return dto;
                 })
                 .collect(Collectors.toList());

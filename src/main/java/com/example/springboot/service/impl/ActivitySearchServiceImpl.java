@@ -103,6 +103,7 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
         // 设置完整部门信息
         if (activity.getDepartment() != null) {
             detailDTO.setDepartment(activity.getDepartment());
+            detailDTO.setDepartmentName(activity.getDepartment().getDepartmentName());
         } else {
             Department defaultDept = new Department();
             defaultDept.setDepartmentId(0L);
@@ -152,7 +153,7 @@ public class ActivitySearchServiceImpl implements ActivitySearchService {
         // 设置部门信息（兼容无关联部门的场景）
         if (activity.getDepartment() != null) {
             detailDTO.setDepartment(activity.getDepartment());
-            detailDTO.setDepartmentName(activity.getDepartment().getDepartmentName());
+            detailDTO.setDepartmentName(activity.getDepartment().getDepartmentName()); // 关键步骤
         } else {
             Department defaultDept = new Department();
             defaultDept.setDepartmentId(0L);

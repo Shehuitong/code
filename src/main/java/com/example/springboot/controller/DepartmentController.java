@@ -67,7 +67,6 @@ public class DepartmentController {
 
         // 构建返回结果
         Map<String, Object> result = new HashMap<>();
-        result.put("departmentId", departmentId);
         result.put("followCount", followCount);
 
         return Result.success(result);
