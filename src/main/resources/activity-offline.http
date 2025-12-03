@@ -1,0 +1,128 @@
+### 1. 管理员登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025002",
+  "password": "Admin123"
+}
+
+> {%
+    client.global.set("adminToken", response.body.data.token);
+    client.global.set("testActivityId", "3"); // 选择志愿者招募活动（ID=3）作为测试对象
+    console.log("管理员Token已存储，测试活动ID：" + client.global.get("testActivityId"));
+%}
+
+### 2. 查看活动初始状态（确保为可下架状态）
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200) {
+        const currentStatus = response.body.data.status;
+        console.log("活动初始状态：" + currentStatus);
+        if (currentStatus === "报名截止" || currentStatus === "下架") {
+            console.error("测试失败：活动当前状态不允许下架，需先恢复为「报名未开始」或「报名进行中」");
+        } else {
+            console.log("活动状态符合下架要求，可执行后续操作");
+        }
+    } else {
+        console.error("获取活动详情失败：" + response.body.message);
+    }
+%}
+
+### 3. （可选）恢复活动为「报名进行中」状态（确保测试环境干净）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "报名进行中",
+  "activityName": "志愿者招募活动（手动下架测试）",
+  "holdStartTime": "2025-12-25T08:00:00",
+  "holdEndTime": "2025-12-25T18:00:00",
+  "applyDeadline": "2025-12-20T23:59:59",
+  "location": "学校大礼堂",
+  "activityDesc": "测试手动下架功能的活动"
+}
+
+> {%
+    if (response.body.code === 200) {
+        console.log("活动状态已恢复为「报名进行中」");
+    } else {
+        console.error("恢复活动状态失败：" + response.body.message);
+    }
+%}
+
+### 4. 执行手动下架操作（调用下架接口）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}/offline
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200) {
+        console.log("手动下架接口调用成功");
+    } else {
+        console.error("手动下架接口调用失败：" + response.body.message);
+    }
+%}
+
+### 5. 验证活动状态是否变为「下架」
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200) {
+        const currentStatus = response.body.data.status;
+        console.log("下架后活动状态：" + currentStatus);
+        if (currentStatus === "下架") {
+            console.log("✅ 手动下架功能测试成功！");
+        } else {
+            console.error("❌ 手动下架功能测试失败：状态未变为「下架」");
+        }
+    } else {
+        console.error("❌ 验证失败：获取活动详情失败");
+    }
+%}
+
+### 6. 异常测试：下架已处于「下架」状态的活动
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}/offline
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code !== 200) {
+        console.log("✅ 异常测试通过：已下架活动不允许再次下架，返回错误：" + response.body.message);
+    } else {
+        console.error("❌ 异常测试失败：已下架活动允许再次下架");
+    }
+%}
+
+### 7. 异常测试：跨部门管理员下架活动
+// 登录计算机学院管理员（部门ID=1），无权限操作外国语学院活动（部门ID=2）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025001",
+  "password": "Admin123"
+}
+
+> {%
+    client.global.set("crossDeptToken", response.body.data.token);
+%}
+
+###// 尝试跨部门下架
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}/offline
+Authorization: Bearer {{crossDeptToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code !== 200) {
+        console.log("✅ 跨部门权限测试通过：无权限下架其他部门活动，返回错误：" + response.body.message);
+    } else {
+        console.error("❌ 跨部门权限测试失败：允许跨部门下架活动");
+    }
+%}

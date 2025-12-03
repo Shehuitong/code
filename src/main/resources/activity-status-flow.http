@@ -1,0 +1,142 @@
+### 1. 管理员登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025002",
+  "password": "Admin123"
+}
+
+> {%
+    client.global.set("adminToken", response.body.data.token);
+    client.global.set("testActivityId", "5"); // 新增测试活动（若ID=5不存在，可先创建或改用其他ID）
+    console.log("管理员Token已存储，测试活动ID：" + client.global.get("testActivityId"));
+%}
+
+### 2. （可选）创建测试活动（若ID=5不存在）
+POST http://localhost:8080/api/admin/activities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "状态流转测试活动",
+  "departmentId": 2,
+  "activityDesc": "测试完整状态流转：未开始→进行中→截止",
+  "holdStartTime": "2025-12-30T09:00:00",
+  "holdEndTime": "2025-12-30T12:00:00",
+  "location": "测试地点",
+  "applyCollege": "全校",
+  "maxPeople": 100,
+  "remainingPeople": 100,
+  "applyCount": 0,
+  "applyDeadline": "2025-12-28T23:59:59",
+  "status": "报名未开始",
+  "applyTime": "2025-12-25T00:00:00",
+  "holdCollege": "外国语学院",
+  "applyGrade": "2024级+2025级"
+}
+
+> {%
+    if (response.body.code === 200) {
+        client.global.set("testActivityId", response.body.data.activityId);
+        console.log("测试活动创建成功，活动ID：" + client.global.get("testActivityId"));
+    } else {
+        console.error("创建测试活动失败：" + response.body.message);
+    }
+%}
+
+### 3. 验证初始状态：报名未开始
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200 && response.body.data.status === "报名未开始") {
+        console.log("✅ 步骤1验证成功：活动初始状态为「报名未开始」");
+    } else {
+        console.error("❌ 步骤1验证失败：活动状态不为「报名未开始」");
+    }
+%}
+
+### 4. 触发状态流转：报名未开始 → 报名进行中（修改报名开始时间为过去）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "状态流转测试活动",
+  "activityDesc": "测试完整状态流转：未开始→进行中→截止",
+  "holdStartTime": "2025-12-30T09:00:00",
+  "holdEndTime": "2025-12-30T12:00:00",
+  "location": "测试地点",
+  "applyTime": "2024-12-01T00:00:00"
+}
+
+> {%
+    if (response.body.code === 200) {
+        console.log("已修改报名开始时间为过去时间，等待状态更新");
+    } else {
+        console.error("修改报名开始时间失败：" + response.body.message);
+    }
+%}
+
+### 5. 验证状态：报名进行中
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200 && response.body.data.status === "报名进行中") {
+        console.log("✅ 步骤2验证成功：活动状态流转为「报名进行中」");
+    } else {
+        console.error("❌ 步骤2验证失败：活动状态未流转为「报名进行中」");
+    }
+%}
+
+### 6. 触发状态流转：报名进行中 → 报名截止（修改报名截止时间为过去）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "applyDeadline": "2024-12-02T00:00:00"
+}
+
+> {%
+    if (response.body.code === 200) {
+        console.log("已修改报名截止时间为过去时间，等待状态更新");
+    } else {
+        console.error("修改报名截止时间失败：" + response.body.message);
+    }
+%}
+
+### 7. 验证状态：报名截止
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200 && response.body.data.status === "报名截止") {
+        console.log("✅ 步骤3验证成功：活动状态流转为「报名截止」");
+        console.log("✅ 完整状态流转测试通过！（报名未开始→报名进行中→报名截止）");
+    } else {
+        console.error("❌ 步骤3验证失败：活动状态未流转为「报名截止」");
+    }
+%}
+
+### 8. 异常测试：已截止活动反向流转（尝试改为报名进行中）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "报名进行中"
+}
+
+> {%
+    if (response.body.code !== 200) {
+        console.log("✅ 异常测试通过：已截止活动不允许反向流转，返回错误：" + response.body.message);
+    } else {
+        console.error("❌ 异常测试失败：已截止活动允许反向流转");
+    }
+%}

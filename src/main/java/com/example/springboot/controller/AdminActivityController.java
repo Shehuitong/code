@@ -115,6 +115,34 @@ public class AdminActivityController {
     }
 
 
+    /**
+     * 管理员手动下架活动
+     */
+    @PutMapping("/{activityId}/offline")
+    public Result<Activity> offlineActivity(
+            @PathVariable Long activityId,
+            HttpServletRequest request) {
+
+        // 从Token中获取管理员ID
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return Result.error("未授权：请传递有效的Token");
+        }
+        String token = authHeader.substring(7);
+        Long adminId = jwtUtil.getUserId(token);
+
+        // 获取管理员所属部门ID
+        Admin admin = adminService.getById(adminId);
+        if (admin == null) {
+            return Result.error("管理员不存在");
+        }
+
+        // 执行下架操作
+        Activity activity = activityService.offlineActivity(activityId, admin.getDepartmentId());
+        return Result.success(activity);
+    }
+
+
     // 新增：查看部门发布活动数的接口
     @GetMapping("/count")
     public Result<Long> getDepartmentActivityCount(HttpServletRequest request) {

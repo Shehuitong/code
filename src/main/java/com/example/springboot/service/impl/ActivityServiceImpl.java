@@ -181,4 +181,32 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         }
     }
 
+
+    // 管理员手动下架活动
+    @Override
+    public Activity offlineActivity(Long activityId, Long departmentId) {
+        // 1. 查询活动是否存在
+        Activity activity = baseMapper.selectById(activityId);
+        if (activity == null) {
+            throw new IllegalArgumentException("活动不存在");
+        }
+
+        // 2. 验证权限：只有活动所属部门的管理员才能下架
+        if (!activity.getDepartmentId().equals(departmentId)) {
+            throw new IllegalArgumentException("没有权限下架此活动");
+        }
+
+        // 3. 验证当前状态是否允许下架
+        ActivityStatusEnum currentStatus = activity.getStatus();
+        if (currentStatus == ActivityStatusEnum.CLOSED || currentStatus == ActivityStatusEnum.OFFLINE) {
+            throw new IllegalArgumentException("当前活动状态不允许下架操作");
+        }
+
+        // 4. 更新活动状态为下架
+        activity.setStatus(ActivityStatusEnum.OFFLINE);
+        baseMapper.updateById(activity);
+
+        return activity;
+    }
+
 }

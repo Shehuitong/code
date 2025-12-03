@@ -1,0 +1,116 @@
+### 1. 管理员登录（获取Token）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025002",
+  "password": "Admin123"
+}
+
+> {%
+    client.global.set("adminToken", response.body.data.token);
+    client.global.set("testActivityId", "1"); // 选择英语竞赛（ID=4）作为测试对象
+    console.log("管理员Token已存储，测试活动ID：" + client.global.get("testActivityId"));
+%}
+
+### 2. 查看活动初始信息
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200) {
+        console.log("活动初始状态：" + response.body.data.status);
+        console.log("初始报名截止时间：" + response.body.data.applyDeadline);
+    } else {
+        console.error("获取活动详情失败：" + response.body.message);
+    }
+%}
+
+### 3. 重置活动状态（确保为「报名进行中」，报名截止时间设为未来）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "报名进行中",
+  "activityName": "英语竞赛（自动截止测试）",
+  "holdStartTime": "2025-12-30T09:00:00",
+  "holdEndTime": "2025-12-30T17:00:00",
+  "applyTime": "2025-12-20T00:00:00",
+  "applyDeadline": "2025-12-28T23:59:59",
+  "location": "教学楼",
+  "activityDesc": "测试自动截止功能的活动"
+}
+
+> {%
+    if (response.body.code === 200) {
+        console.log("活动状态已重置为「报名进行中」");
+    } else {
+        console.error("重置活动状态失败：" + response.body.message);
+    }
+%}
+
+### 4. 设置报名截止时间为「过去时间」（触发自动截止条件）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "英语竞赛（自动截止测试）",
+  "holdStartTime": "2025-12-30T09:00:00",
+  "holdEndTime": "2025-12-30T17:00:00",
+  "applyTime": "2025-12-02T00:00:00",
+  "location": "教学楼",
+  "activityDesc": "测试guoqu自动截止功能的活动",
+  "applyDeadline": "2024-12-01T00:00:00"
+}
+
+> {%
+    if (response.body.code === 200) {
+        console.log("报名截止时间已设置为过去时间：2024-12-01T00:00:00");
+    } else {
+        console.error("设置报名截止时间失败：" + response.body.message);
+    }
+%}
+
+
+### 6. 验证活动状态是否自动变为「报名截止」
+GET http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+> {%
+    if (response.body.code === 200) {
+        const currentStatus = response.body.data.status;
+        const currentDeadline = response.body.data.applyDeadline;
+        console.log("当前活动状态：" + currentStatus);
+        console.log("当前报名截止时间：" + currentDeadline);
+
+        if (currentStatus === "报名截止") {
+            console.log("✅ 自动截止功能测试成功！");
+        } else {
+            console.error("❌ 自动截止功能测试失败：状态未变为「报名截止」");
+            console.error("可能原因：定时任务未执行，或时间设置错误");
+        }
+    } else {
+        console.error("❌ 验证失败：获取活动详情失败");
+    }
+%}
+
+### 7. 异常测试：已截止活动再次修改截止时间
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "applyDeadline": "2025-12-30T23:59:59"
+}
+
+> {%
+    if (response.body.code !== 200) {
+        console.log("✅ 异常测试通过：已截止活动不允许修改截止时间，返回错误：" + response.body.message);
+    } else {
+        console.error("❌ 异常测试失败：已截止活动允许修改截止时间");
+    }
+%}

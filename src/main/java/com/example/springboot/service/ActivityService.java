@@ -16,4 +16,6 @@ public interface ActivityService extends IService<Activity> {
     long countByDepartmentId(Long departmentId);
     //编辑活动信息
     Activity editActivity(Long activityId, ActivityEditDTO activityEditDTO, Long departmentId);
+    // 添加下架活动的方法
+    Activity offlineActivity(Long activityId, Long departmentId);
 }
