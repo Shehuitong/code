@@ -11,9 +11,23 @@ import com.example.springboot.service.ActivityService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.time.LocalDateTime;
+// 新增依赖导入
+import com.example.springboot.service.UserFavoritesService;
+import com.example.springboot.service.NotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> implements ActivityService {
+
+    // 新增：注入查询收藏用户的服务和发送通知的服务
+    private final UserFavoritesService userFavoritesService;
+    private final NotificationService notificationService;
+    // 新增：构造器注入依赖
+    @Autowired
+    public ActivityServiceImpl(UserFavoritesService userFavoritesService, NotificationService notificationService) {
+        this.userFavoritesService = userFavoritesService;
+        this.notificationService = notificationService;
+    }
 
     @Override
     public List<Activity> getByDepartmentId(Long departmentId) {
@@ -64,6 +78,15 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 
         // 保存活动信息
         baseMapper.insert(activity);
+        // 新增：发送收藏部门用户的通知
+        // 2.1 获取所有收藏该部门的用户ID
+        List<Long> favoriteUserIds = userFavoritesService.getUserIdsByFavoriteDepartment(departmentId);
+
+        // 2.2 向每个用户发送通知
+        String notificationContent = "您收藏的部门发布新活动了！";
+        for (Long userId : favoriteUserIds) {
+            notificationService.sendNotification(userId, notificationContent);
+        }
         return activity;
     }
 

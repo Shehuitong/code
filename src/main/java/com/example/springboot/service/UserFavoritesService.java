@@ -35,4 +35,6 @@ public interface UserFavoritesService extends IService<UserFavorites> {
      * @return 关注人数
      */
     int countDepartmentFollowers(Long departmentId);
+    // 新增：根据部门ID查询所有收藏该部门的用户ID
+    List<Long> getUserIdsByFavoriteDepartment(Long departmentId);
 }

@@ -1,5 +1,6 @@
 package com.example.springboot.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.springboot.dto.ActivityDetailDTO;
 import com.example.springboot.entity.Activity;
@@ -14,6 +15,7 @@ import com.example.springboot.service.UserFavoritesService;
 import com.example.springboot.service.UserService;
 import com.example.springboot.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.context.annotation.Lazy; // 正确包
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,8 +41,8 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
     // 构造器注入所有依赖
     @Autowired
     public UserFavoritesServiceImpl(UserService userService,
-                                    DepartmentService departmentService,
-                                    ActivityService activityService,
+                                    @Lazy DepartmentService departmentService,
+                                    @Lazy ActivityService activityService,
                                     DepartmentMapper departmentMapper,
                                     JwtUtil jwtUtil) {
         this.userService = userService;
@@ -259,5 +261,28 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
                 UserFavorites.TYPE_DEPARTMENT,
                 UserFavorites.STATUS_FAVORITED
         );
+    }
+    // 新增：实现根据部门ID查询收藏该部门的用户ID列表
+    @Override
+    public List<Long> getUserIdsByFavoriteDepartment(Long departmentId) {
+        // 1. 校验部门是否存在
+        if (departmentService.getById(departmentId) == null) {
+            throw new BusinessErrorException("部门不存在");
+        }
+
+        // 2. 查询所有收藏该部门且状态为"已收藏"的记录
+        LambdaQueryWrapper<UserFavorites> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserFavorites::getTargetId, departmentId)
+                .eq(UserFavorites::getTargetType, UserFavorites.TYPE_DEPARTMENT) // 收藏类型为部门
+                .eq(UserFavorites::getFavoriteStatus, UserFavorites.STATUS_FAVORITED) // 已收藏状态
+                .eq(UserFavorites::getIsDeleted, 0); // 未删除
+
+        List<UserFavorites> favorites = baseMapper.selectList(queryWrapper);
+
+        // 3. 提取用户ID列表
+        return favorites.stream()
+                .map(UserFavorites::getUserId)
+                .distinct() // 去重，避免重复通知同一用户
+                .collect(Collectors.toList());
     }
 }

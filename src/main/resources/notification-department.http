@@ -1,0 +1,154 @@
+@env="global"
+
+### 【前置步骤1】普通用户（收藏部门的用户）登录 - 获取Token
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202200101",
+  "password": "Aa202200101"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("collectUserToken", res.data.token); // 收藏用户的Token
+        console.log("✅ 收藏用户登录成功，Token已保存：" + client.global.get("collectUserToken"));
+    } else {
+        console.error("❌ 收藏用户登录失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【前置步骤2】另一个普通用户（未收藏部门）登录 - 获取Token
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202200530",
+  "password": "Aa202200530"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("otherUserToken", res.data.token); // 未收藏用户的Token
+        console.log("✅ 其他用户登录成功，Token已保存：" + client.global.get("otherUserToken"));
+    } else {
+        console.error("❌ 其他用户登录失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【前置步骤3】管理员（发布活动）登录 - 获取Token（使用你提供的管理员账号）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "G2025002",
+  "password": "Admin123"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("adminToken", res.data.token); // 管理员Token
+        console.log("✅ 管理员登录成功，Token已保存：" + client.global.get("adminToken"));
+    } else {
+        console.error("❌ 管理员登录失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【场景1】用户收藏目标部门（部门ID=2，后续活动将关联此部门）
+POST http://localhost:8080/favorites/add
+Authorization: Bearer {{collectUserToken}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=2&targetType=DEPARTMENT
+
+
+### 【场景2】验证用户已成功收藏部门（确认收藏状态）
+GET http://localhost:8080/api/user/favorites/departments
+Authorization: Bearer {{collectUserToken}}
+Accept: application/json
+
+
+### 【场景3】管理员发布关联该部门的新活动（触发收藏用户的通知）
+POST http://localhost:8080/api/admin/activities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "部门收藏通知测试活动",
+  "holdStartTime": "2025-12-25T14:00:00",
+  "holdEndTime": "2025-12-25T17:30:00",
+  "location": "外国语学院302会议室",
+  "applyGrade": "2022级+2023级+2024级",
+  "applyCollege": "外国语学院",
+  "applyTime": "2025-12-10T00:00:00",
+  "applyDeadline": "2025-12-20T23:59:59",
+  "scoreType": "1.4.人文与科学素养",
+  "score": 3.00,
+  "volunteerHours": 2.0,
+  "maxPeople": 60,
+  "activityDesc": "本活动属于部门2（用户已收藏），用于测试收藏部门后是否收到通知。活动将围绕跨文化交流展开，参与可获德育加分。",
+  "holdCollege": "外国语学院",
+  "departmentId": 2
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.activityId) {
+        client.global.set("newActivityId", res.data.activityId); // 保存新活动ID
+        console.log("✅ 管理员发布部门2的活动成功，活动ID：" + client.global.get("newActivityId"));
+    } else {
+        console.error("❌ 管理员发布活动失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【场景4】验证收藏用户收到通知（应包含部门2的活动通知）
+GET http://localhost:8080/api/user/notifications
+Authorization: Bearer {{collectUserToken}}
+Accept: application/json
+
+
+### 【场景5】验证未收藏用户未收到通知（不应有部门2的活动通知）
+GET http://localhost:8080/api/user/notifications
+Authorization: Bearer {{otherUserToken}}
+Accept: application/json
+
+
+### 【场景6】用户取消收藏部门2（后续活动不再通知）
+POST http://localhost:8080/favorites/cancel
+Authorization: Bearer {{collectUserToken}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=2&targetType=DEPARTMENT
+
+
+### 【场景7】管理员再次发布部门2的活动（验证取消收藏后无通知）
+POST http://localhost:8080/api/admin/activities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "取消收藏后通知测试活动",
+  "holdStartTime": "2025-12-30T14:00:00",
+  "holdEndTime": "2025-12-30T16:00:00",
+  "location": "外国语学院302会议室",
+  "applyGrade": "2023级+2024级",
+  "applyCollege": "外国语学院",
+  "applyTime": "2025-12-20T00:00:00",
+  "applyDeadline": "2025-12-25T23:59:59",
+  "scoreType": "1.4.人文与科学素养",
+  "score": 2.50,
+  "volunteerHours": 1.5,
+  "maxPeople": 40,
+  "activityDesc": "用户已取消收藏部门2，本活动不应触发通知。",
+  "holdCollege": "外国语学院",
+  "departmentId": 2
+}
+
+
+### 【场景8】验证取消收藏后无通知（收藏用户不应收到本次活动通知）
+GET http://localhost:8080/api/user/notifications
+Authorization: Bearer {{collectUserToken}}
+Accept: application/json
