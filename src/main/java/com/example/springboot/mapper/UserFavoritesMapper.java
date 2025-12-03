@@ -58,7 +58,7 @@ public interface UserFavoritesMapper extends BaseMapper<UserFavorites> {
             "AND favorite_status = #{status} " +
             "AND is_deleted = 0")
     Integer countByTargetIdAndType(
-            @Param("targetId") Long departmentId,
+            @Param("departmentId") Long departmentId,
             @Param("targetType") String targetType,
             @Param("status") String status
     );

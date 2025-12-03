@@ -145,23 +145,12 @@ public class AdminActivityController {
 
     // 新增：查看部门发布活动数的接口
     @GetMapping("/count")
-    public Result<Long> getDepartmentActivityCount(HttpServletRequest request) {
-        // 从Token中获取管理员ID
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return Result.error("未授权：请传递有效的Token");
+    public Result<Long> getDepartmentActivityCount(@RequestParam Long departmentId) {
+        if (departmentId == null) {
+            return Result.error("部门ID不能为空");
         }
-        String token = authHeader.substring(7);
-        Long adminId = jwtUtil.getUserId(token);
-
-        // 获取管理员所属部门ID
-        Admin admin = adminService.getById(adminId);
-        if (admin == null) {
-            return Result.error("管理员不存在");
-        }
-
-        // 统计该部门发布的活动数量
-        long count = activityService.countByDepartmentId(admin.getDepartmentId());
+        // 直接根据传入的部门ID统计活动数量
+        long count = activityService.countByDepartmentId(departmentId);
         return Result.success(count);
     }
 }

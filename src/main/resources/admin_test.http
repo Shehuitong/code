@@ -75,9 +75,8 @@ Content-Type: application/json
 
 
 ###查看当前部门关注人数
-GET http://localhost:8080/api/department/follow-count
+GET http://localhost:8080/api/department/follow-count?departmentId=2
 Authorization: Bearer {{adminToken}}
 
 ###查看部门发布活动数
-GET http://localhost:8080/api/admin/activities/count
-Authorization: Bearer {{adminToken}}
+GET http://localhost:8080/api/admin/activities/count?departmentId=2

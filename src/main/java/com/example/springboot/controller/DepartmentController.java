@@ -56,33 +56,20 @@ public class DepartmentController {
     }
 
     @GetMapping("/follow-count")
-    public Map<String, Object> getDepartmentFollowCount(HttpServletRequest request) {
-        // 获取并解析token
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
+    public Result<Map<String, Object>> getDepartmentFollowCount(@RequestParam Long departmentId) {
+        // 非空校验：部门ID不能为空
+        if (departmentId == null) {
+            return Result.error("部门ID不能为空，请手动输入");
         }
 
-        // 验证管理员身份
-        String role = jwtUtil.getRoleFromToken(token);
-        if (!"admin".equals(role)) {
-            throw new BusinessErrorException("无权限访问，需管理员身份");
-        }
+        // 直接通过传入的部门ID查询关注人数
+        int followCount = favoritesService.countDepartmentFollowers(departmentId);
 
-        // 获取管理员信息
-        Long adminId = jwtUtil.getUserId(token);
-        Admin admin = adminService.getById(adminId);
-        if (admin == null) {
-            throw new BusinessErrorException("管理员不存在");
-        }
-
-        // 获取当前部门关注人数
-        int followCount = favoritesService.countDepartmentFollowers(admin.getDepartmentId());
-
+        // 构建返回结果
         Map<String, Object> result = new HashMap<>();
-        result.put("departmentId", admin.getDepartmentId());
+        result.put("departmentId", departmentId);
         result.put("followCount", followCount);
-        result.put("message", "查询成功");
-        return result;
+
+        return Result.success(result);
     }
 }
