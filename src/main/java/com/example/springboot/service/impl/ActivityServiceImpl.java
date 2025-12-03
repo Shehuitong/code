@@ -7,6 +7,7 @@ import com.example.springboot.dto.ActivityPublishDTO;
 import com.example.springboot.entity.Activity;
 import com.example.springboot.enums.ActivityStatusEnum;
 import com.example.springboot.mapper.ActivityMapper;
+import com.example.springboot.service.ActivityRegistrationService;
 import com.example.springboot.service.ActivityService;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import com.example.springboot.service.UserFavoritesService;
 import com.example.springboot.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy; // 正确包
 
 @Service
 public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> implements ActivityService {
@@ -22,6 +24,9 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
     // 新增：注入查询收藏用户的服务和发送通知的服务
     private final UserFavoritesService userFavoritesService;
     private final NotificationService notificationService;
+    @Autowired
+    @Lazy
+    private ActivityRegistrationService activityRegistrationService; // 新增这行
     // 新增：构造器注入依赖
     @Autowired
     public ActivityServiceImpl(UserFavoritesService userFavoritesService, NotificationService notificationService) {
@@ -158,6 +163,14 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 
         // 5. 保存更新
         baseMapper.updateById(activity);
+        // 查询该活动的所有报名用户ID
+        List<Long> registeredUserIds = activityRegistrationService.getUserIdsByActivityId(activityId);
+
+        // 向每个报名用户发送通知
+        String notificationContent = "您报名的活动有变动！请查看！";
+        for (Long userId : registeredUserIds) {
+            notificationService.sendNotification(userId, notificationContent);
+        }
         return activity;
     }
 

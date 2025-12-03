@@ -69,6 +69,24 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         this.activityService = activityService;
         this.departmentMapper = departmentMapper;
     }
+    // 在ActivityRegistrationServiceImpl中添加以下代码
+
+    @Override
+    public List<Long> getUserIdsByActivityId(Long activityId) {
+        // 校验活动ID是否存在
+        if (activityId == null) {
+            throw new IllegalArgumentException("活动ID不能为空");
+        }
+        // 查询该活动下所有报名记录的用户ID
+        LambdaQueryWrapper<ActivityRegistration> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ActivityRegistration::getActivityId, activityId)
+                .select(ActivityRegistration::getUserId); // 只查询userId字段，优化性能
+        // 提取用户ID列表
+        return baseMapper.selectList(wrapper).stream()
+                .map(ActivityRegistration::getUserId)
+                .distinct() // 去重（防止重复报名记录导致的重复用户ID）
+                .toList();
+    }
     /**
      * 查看用户已报名的活动（仅查状态码1，返回活动全部信息）
      * @param userId 用户ID

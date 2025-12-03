@@ -42,5 +42,11 @@ public interface ActivityRegistrationService extends IService<ActivityRegistrati
     void registerActivity(Long userId, Long activityId);
 
     // 新增：用户取消报名
-    void cancelRegistration(Long userId, Long activityId);
+    void cancelRegistration(Long userId, Long activityId);/**
+     * 根据活动ID查询所有报名用户的ID
+     * @param activityId 活动ID
+     * @return 报名用户ID列表
+     */
+    List<Long> getUserIdsByActivityId(Long activityId);
+
 }

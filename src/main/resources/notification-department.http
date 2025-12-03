@@ -38,7 +38,7 @@ Content-Type: application/json
 %}
 
 
-### 【前置步骤3】管理员（发布活动）登录 - 获取Token（使用你提供的管理员账号）
+### 【前置步骤3】管理员（发布活动）登录 - 获取Token
 POST http://localhost:8080/login
 Content-Type: application/json
 
@@ -57,7 +57,46 @@ Content-Type: application/json
 %}
 
 
-### 【场景1】用户收藏目标部门（部门ID=2，后续活动将关联此部门）
+### 【前置步骤4】已报名活动的用户登录 - 获取Token（用于活动编辑通知测试）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202200101",
+  "password": "Aa202200101"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("registeredUserId", res.data.userId); // 保存已报名用户ID
+        client.global.set("registeredUserToken", res.data.token); // 保存已报名用户Token
+        console.log("✅ 已报名用户登录成功，Token已保存：" + client.global.get("registeredUserToken"));
+    } else {
+        console.error("❌ 已报名用户登录失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【前置步骤5】未报名活动的用户登录 - 获取Token（用于对比）
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "account": "202200530",
+  "password": "Aa202200530"
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.token) {
+        client.global.set("unregisteredUserToken", res.data.token); // 保存未报名用户Token
+        console.log("✅ 未报名用户登录成功，Token已保存：" + client.global.get("unregisteredUserToken"));
+    } else {
+        console.error("❌ 未报名用户登录失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【场景1】用户收藏目标部门（部门ID=2）
 POST http://localhost:8080/favorites/add
 Authorization: Bearer {{collectUserToken}}
 Content-Type: application/x-www-form-urlencoded
@@ -65,31 +104,31 @@ Content-Type: application/x-www-form-urlencoded
 targetId=2&targetType=DEPARTMENT
 
 
-### 【场景2】验证用户已成功收藏部门（确认收藏状态）
+### 【场景2】验证用户已成功收藏部门
 GET http://localhost:8080/api/user/favorites/departments
 Authorization: Bearer {{collectUserToken}}
 Accept: application/json
 
 
-### 【场景3】管理员发布关联该部门的新活动（触发收藏用户的通知）
+### 【场景3】管理员发布关联部门2的新活动（使用ISO时间格式，applyCollege为字符串）
 POST http://localhost:8080/api/admin/activities
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "activityName": "部门收藏通知测试活动",
-  "holdStartTime": "2025-12-25T14:00:00",
-  "holdEndTime": "2025-12-25T17:30:00",
+  "activityName": "跨文化交流沙龙",
+  "holdStartTime": "2025-12-20T14:00:00",
+  "holdEndTime": "2025-12-20T17:30:00",
   "location": "外国语学院302会议室",
-  "applyGrade": "2022级+2023级+2024级",
+  "applyGrade": "2023级+2024级+2025级",
   "applyCollege": "外国语学院",
-  "applyTime": "2025-12-10T00:00:00",
-  "applyDeadline": "2025-12-20T23:59:59",
+  "applyTime": "2025-12-05T00:00:00",
+  "applyDeadline": "2025-12-15T23:59:59",
   "scoreType": "1.4.人文与科学素养",
-  "score": 3.00,
-  "volunteerHours": 2.0,
-  "maxPeople": 60,
-  "activityDesc": "本活动属于部门2（用户已收藏），用于测试收藏部门后是否收到通知。活动将围绕跨文化交流展开，参与可获德育加分。",
+  "score": 3.50,
+  "volunteerHours": 2.5,
+  "maxPeople": 80,
+  "activityDesc": "本次跨文化交流沙龙邀请国内外留学生共同参与，通过主题分享、小组讨论、文化展示等形式，促进不同国家、不同文化背景学生的交流与理解。活动全程提供茶歇，参与学生可获得德育加分及志愿时长认证，欢迎感兴趣的同学报名参加！",
   "holdCollege": "外国语学院",
   "departmentId": 2
 }
@@ -104,19 +143,19 @@ Content-Type: application/json
 %}
 
 
-### 【场景4】验证收藏用户收到通知（应包含部门2的活动通知）
+### 【场景4】验证收藏用户收到通知
 GET http://localhost:8080/api/user/notifications
 Authorization: Bearer {{collectUserToken}}
 Accept: application/json
 
 
-### 【场景5】验证未收藏用户未收到通知（不应有部门2的活动通知）
+### 【场景5】验证未收藏用户未收到通知
 GET http://localhost:8080/api/user/notifications
 Authorization: Bearer {{otherUserToken}}
 Accept: application/json
 
 
-### 【场景6】用户取消收藏部门2（后续活动不再通知）
+### 【场景6】用户取消收藏部门2
 POST http://localhost:8080/favorites/cancel
 Authorization: Bearer {{collectUserToken}}
 Content-Type: application/x-www-form-urlencoded
@@ -124,7 +163,7 @@ Content-Type: application/x-www-form-urlencoded
 targetId=2&targetType=DEPARTMENT
 
 
-### 【场景7】管理员再次发布部门2的活动（验证取消收藏后无通知）
+### 【场景7】管理员再次发布部门2的活动（保持格式一致）
 POST http://localhost:8080/api/admin/activities
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
@@ -148,7 +187,131 @@ Content-Type: application/json
 }
 
 
-### 【场景8】验证取消收藏后无通知（收藏用户不应收到本次活动通知）
+### 【场景8】验证取消收藏后无通知
 GET http://localhost:8080/api/user/notifications
 Authorization: Bearer {{collectUserToken}}
 Accept: application/json
+
+
+### 【场景9】管理员发布测试活动（供编辑通知测试，保持格式一致）
+POST http://localhost:8080/api/admin/activities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "活动编辑通知测试活动",
+  "holdStartTime": "2025-12-25T14:00:00",
+  "holdEndTime": "2025-12-25T17:30:00",
+  "location": "测试会议室",
+  "applyGrade": "2022级",
+  "applyCollege": "外国语学院",
+  "applyTime": "2025-12-03T20:09:00",
+  "applyDeadline": "2025-12-20T23:59:59",
+  "scoreType": "1.4.人文与科学素养",
+  "score": 3.00,
+  "volunteerHours": 2.0,
+  "maxPeople": 60,
+  "activityDesc": "用于测试活动编辑后通知已报名用户的功能",
+  "holdCollege": "外国语学院",
+  "departmentId": 2
+}
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.activityId) {
+        client.global.set("testActivityId", res.data.activityId); // 保存测试活动ID
+        console.log("✅ 管理员发布测试活动成功，活动ID：" + client.global.get("testActivityId"));
+    } else {
+        console.error("❌ 管理员发布活动失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【场景10】已报名用户报名该活动
+POST http://localhost:8080/api/registration/activity/7
+Authorization: Bearer {{registeredUserToken}}
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "activityId": 7
+}
+
+
+### 【场景11】验证用户已成功报名
+GET http://localhost:8080/api/activity/{{testActivityId}}/applyCount
+Accept: application/json
+
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data === 1) {
+        console.log("✅ 已报名用户报名成功，当前报名人数：" + res.data);
+    } else {
+        console.error("❌ 报名失败，当前报名人数：" + (res.data || "未知"));
+    }
+%}
+
+
+### 【场景12】管理员编辑该活动（触发通知，保持格式一致）
+PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "activityName": "活动编辑通知测试活动（已修改）",
+  "holdStartTime": "2025-12-25T14:30:00",
+  "holdEndTime": "2025-12-25T18:00:00",
+  "location": "测试会议室（已更换）",
+  "applyGrade": "2022级",
+  "applyCollege": "外国语学院",
+  "applyTime": "2025-12-10T00:00:00",
+  "applyDeadline": "2025-12-20T23:59:59",
+  "scoreType": "1.4.人文与科学素养",
+  "score": 3.00,
+  "volunteerHours": 2.0,
+  "activityDesc": "用于测试活动编辑后通知已报名用户的功能（已修改内容）",
+  "holdCollege": "外国语学院"
+}
+
+
+### 【场景13】验证已报名用户收到活动变动通知
+GET http://localhost:8080/api/user/notifications
+Authorization: Bearer {{registeredUserToken}}
+Accept: application/json
+
+> {%
+    const res = response.body || {};
+    if (res.code === 200 && res.data?.length > 0) {
+        const hasTargetNotice = res.data.some(notice =>
+            notice.content === "您报名的活动有变动！请查看！"
+        );
+        if (hasTargetNotice) {
+            console.log("✅ 已报名用户成功收到活动变动通知");
+        } else {
+            console.error("❌ 已报名用户未收到目标通知");
+        }
+    } else {
+        console.error("❌ 获取已报名用户通知失败：" + (res.msg || "未知错误"));
+    }
+%}
+
+
+### 【场景14】验证未报名用户未收到活动变动通知
+GET http://localhost:8080/api/user/notifications
+Authorization: Bearer {{unregisteredUserToken}}
+Accept: application/json
+
+> {%
+    const res = response.body || {};
+    if (res.code === 200) {
+        const hasTargetNotice = res.data?.some(notice =>
+            notice.content === "您报名的活动有变动！请查看！"
+        );
+        if (!hasTargetNotice) {
+            console.log("✅ 未报名用户未收到活动变动通知（符合预期）");
+        } else {
+            console.error("❌ 未报名用户不应收到目标通知，但检测到通知");
+        }
+    } else {
+        console.error("❌ 获取未报名用户通知失败：" + (res.msg || "未知错误"));
+    }
+%}
