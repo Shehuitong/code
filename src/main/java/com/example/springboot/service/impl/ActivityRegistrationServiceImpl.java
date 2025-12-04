@@ -412,11 +412,21 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         GradeEnum requiredGrade = activity.getApplyGrade(); // 获取活动要求的年级（枚举类型）
         GradeEnum userGrade = user.getGrade(); // 假设User类中grade字段为GradeEnum类型
         // 若活动要求不是"全年级"，则校验用户年级是否匹配
-        if (!"全年级".equals(requiredGrade.getDesc()) && !requiredGrade.equals(userGrade)) {
-            throw new BusinessErrorException(String.format(
-                    "您的年级（%s）不符合活动要求（%s）",
-                    userGrade.getDesc(), requiredGrade.getDesc()
-            ));
+        // 1. 若活动允许全年级（对应枚举GRADE_ALL），直接通过
+        if (requiredGrade == GradeEnum.GRADE_ALL) {
+            // 全年级允许报名，不做额外校验
+        } else {
+            // 2. 拆分活动要求的年级组合（如"2022级+2023级" -> ["2022级", "2023级"]）
+            String[] allowedGradeDescs = requiredGrade.getDesc().split("\\+");
+            Set<String> allowedGradeSet = new HashSet<>(Arrays.asList(allowedGradeDescs));
+
+            // 3. 检查用户年级是否在允许范围内
+            if (!allowedGradeSet.contains(userGrade.getDesc())) {
+                throw new BusinessErrorException(String.format(
+                        "您的年级（%s）不符合活动要求（%s）",
+                        userGrade.getDesc(), requiredGrade.getDesc()
+                ));
+            }
         }
 
         // 校验是否已报名

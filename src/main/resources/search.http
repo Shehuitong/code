@@ -15,7 +15,7 @@ GET http://localhost:8080/api/department/search/suggest?keyword=法
 GET http://localhost:8080/api/department/search?keyword=计算 & pageNum=1&pageSize=10
 
 ###3. 部门详情接口
-GET http://localhost:8080/api/department/detail/3
+GET http://localhost:8080/api/department/detail/1
 
 ###
 GET http://localhost:8080/api/admin/activity/export/2
