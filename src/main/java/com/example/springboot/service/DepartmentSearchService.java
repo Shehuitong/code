@@ -23,4 +23,7 @@ public interface DepartmentSearchService extends IService<Department> {
     DepartmentDetailDTO getDepartmentDetail(Long departmentId);
     // 根据部门ID查询部门信息
     Department getByDeptId(Long departmentId);
+
+    // 新增：获取所有部门详情（含活动）
+    List<DepartmentDetailDTO> getAllDepartmentsDetail();
 }

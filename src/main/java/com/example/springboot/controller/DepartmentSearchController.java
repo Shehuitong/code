@@ -6,6 +6,7 @@ import com.example.springboot.dto.DepartmentListDTO;
 import com.example.springboot.dto.DepartmentSuggestDTO;
 import com.example.springboot.service.DepartmentSearchService;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Result;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,5 +56,11 @@ public class DepartmentSearchController {
     ) {
         DepartmentDetailDTO detailDTO = departmentSearchService.getDepartmentDetail(departmentId);
         return ResponseEntity.ok(detailDTO);
+    }
+    // 新增：获取所有部门详情
+    @GetMapping("/all/detail")
+    public ResponseEntity<List<DepartmentDetailDTO>> getAllDepartmentsDetail() {
+        List<DepartmentDetailDTO> allDetails = departmentSearchService.getAllDepartmentsDetail();
+        return ResponseEntity.ok(allDetails);
     }
 }

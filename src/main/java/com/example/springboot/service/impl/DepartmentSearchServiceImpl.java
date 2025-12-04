@@ -13,12 +13,16 @@ import com.example.springboot.excption.BusinessErrorException;
 import com.example.springboot.mapper.DepartmentMapper;
 import com.example.springboot.service.ActivityService;
 import com.example.springboot.service.DepartmentSearchService;
+import com.example.springboot.service.UserFavoritesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +36,7 @@ public class DepartmentSearchServiceImpl extends ServiceImpl<DepartmentMapper, D
     private final ActivityService activityService;
 
 
+    private final UserFavoritesService userFavoritesService; // 注入关注服务
 
     /**
      * 1. 搜索联想：返回含关键词的部门名称（最多10个）
@@ -113,6 +118,35 @@ public class DepartmentSearchServiceImpl extends ServiceImpl<DepartmentMapper, D
     public Department getByDeptId(Long departmentId) {
         return baseMapper.selectOne(new LambdaQueryWrapper<Department>()
                 .eq(Department::getDepartmentId, departmentId));
+    }
+
+    @Override
+    public List<DepartmentDetailDTO> getAllDepartmentsDetail() {
+        // 1. 查询所有部门基础信息
+        List<Department> allDepartments = baseMapper.selectList(null);
+        if (allDepartments.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2. 组装部门详情（含关注人数、处理学院null值、活动置空）
+        return allDepartments.stream()
+                .map(department -> {
+                    DepartmentDetailDTO detailDTO = new DepartmentDetailDTO();
+
+
+                    detailDTO.setDepartment(department);
+
+                    // 2.2 核心：调用统计方法，获取当前部门的关注人数
+                    Integer followCount = userFavoritesService.countDepartmentFollowers(department.getDepartmentId());
+                    // 兜底：避免返回null，无关注时显示0
+                    detailDTO.setFollowCount(Optional.ofNullable(followCount).orElse(0));
+
+                    // 2.3 活动列表置空（符合原需求）
+                    detailDTO.setActivities(Collections.emptyList());
+
+                    return detailDTO;
+                })
+                .collect(Collectors.toList());
     }
     /**
      * 工具方法：Department → DepartmentListDTO（包含所有活动）

@@ -8,6 +8,7 @@ import lombok.Getter;
  */
 @Getter
 public enum CollegeEnum {
+    ALL("全校"),
     COMPUTER("计算机学院"),
     LAW("法学院"),
     CHEMISTRY("化学学院"),
