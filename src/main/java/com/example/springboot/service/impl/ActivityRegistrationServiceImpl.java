@@ -375,7 +375,7 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
     }
     @Transactional
     @Override
-    public void registerActivity(Long userId, Long activityId) {
+    public ActivityRegistration registerActivity(Long userId, Long activityId) {
         // 1. 从请求头获取Token并解析角色（管理员判断核心逻辑）
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
@@ -445,6 +445,9 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
                 activity.setApplyCount(activity.getApplyCount() + 1);
                 activity.setRemainingPeople(activity.getRemainingPeople() - 1);
                 activityMapper.updateById(activity);
+                // 修正：使用existing变量（if块中有效的报名记录对象）
+                log.info("用户{}报名活动{}成功，报名ID：{}", userId, activityId, existing.getRegistrationId());
+                return existing; // 返回更新后的报名记录
             }
         } else {
             // 新增报名记录并减少名额
@@ -456,12 +459,15 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
             activity.setApplyCount(activity.getApplyCount() + 1);
             activity.setRemainingPeople(activity.getRemainingPeople() - 1);
             activityMapper.updateById(activity);
+            return registration; // 返回新增的报名记录
         }
+        // 兜底返回（理论上不会走到这里）
+        throw new BusinessErrorException("报名操作异常");
     }
 
     @Transactional
     @Override
-    public void cancelRegistration(Long userId, Long activityId) {
+    public ActivityRegistration cancelRegistration(Long userId, Long activityId) {
         // 查询报名记录
         LambdaQueryWrapper<ActivityRegistration> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActivityRegistration::getUserId, userId)
@@ -470,6 +476,8 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         ActivityRegistration registration = baseMapper.selectOne(queryWrapper);
 
         if (registration == null) {
+            // 日志打印，辅助排查：用户ID、活动ID是否正确
+            log.error("未找到报名记录：用户{}，活动{}，状态APPLIED", userId, activityId);
             throw new BusinessErrorException("未找到报名记录，无法取消");
         }
 
@@ -487,5 +495,6 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         activity.setApplyCount(activity.getApplyCount() - 1);
         activity.setRemainingPeople(activity.getRemainingPeople() + 1);
         activityMapper.updateById(activity);
+        return registration; // 返回更新后的报名记录
     }
 }

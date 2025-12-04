@@ -1,6 +1,7 @@
 package com.example.springboot.controller;
 
 import com.example.springboot.common.Result;
+import com.example.springboot.entity.ActivityRegistration;
 import com.example.springboot.excption.BusinessErrorException; // 修正包名拼写：excption→exception
 import com.example.springboot.service.ActivityRegistrationService;
 import com.example.springboot.util.JwtUtil;
@@ -36,14 +37,14 @@ public class ActivityRegistrationController {
      * 请求头：Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...（用户4的有效Token）
      */
     @PostMapping("/activity/{activityId}")
-    public Result<String> register(
+    public Result<ActivityRegistration> register(
             HttpServletRequest request,
             @PathVariable Long activityId
     ) {
         try {
             Long userId = getCurrentUserId(request); // 从Token解析用户ID（用户4的ID为4）
-            registrationService.registerActivity(userId, activityId);
-            return Result.success("报名成功");
+            ActivityRegistration registration = registrationService.registerActivity(userId, activityId);
+            return Result.success(registration); // 传入报名记录作为数据
         } catch (BusinessErrorException e) {
             // 返回业务异常信息（如"年级不符合"、"已报名"等）
             return Result.error(e.getMessage());
@@ -59,14 +60,15 @@ public class ActivityRegistrationController {
      * 请求头：Authorization: Bearer <用户4的Token>
      */
     @DeleteMapping("/activity/{activityId}")
-    public Result<String> cancel(
+    public Result<ActivityRegistration> cancel(
             HttpServletRequest request,
             @PathVariable Long activityId
     ) {
         try {
             Long userId = getCurrentUserId(request);
-            registrationService.cancelRegistration(userId, activityId);
-            return Result.success("取消报名成功");
+            // 调用服务层方法，获取操作后的报名记录
+            ActivityRegistration registration = registrationService.cancelRegistration(userId, activityId);
+            return Result.success(registration); // 传入报名记录作为数据
         } catch (BusinessErrorException e) {
             return Result.error(e.getMessage());
         } catch (Exception e) {

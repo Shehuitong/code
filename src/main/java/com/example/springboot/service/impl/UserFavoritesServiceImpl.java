@@ -53,7 +53,7 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
         this.jwtUtil = jwtUtil;
     }
     @Override
-    public void addFavorite(Long targetId, String targetType) {
+    public UserFavorites addFavorite(Long targetId, String targetType)  {
         // 1. 从请求头获取token（与活动报名逻辑一致）
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null) {
@@ -109,9 +109,10 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
         favorites.setTargetId(targetId);
         favorites.setTargetType(targetType);  // 类型为字符串（ACTIVITY/DEPARTMENT）
         baseMapper.insert(favorites);
+        return favorites;
     }
     @Override
-    public void cancelFavorite(Long targetId, String targetType) {
+    public UserFavorites cancelFavorite(Long targetId, String targetType) {
         // 1. 从请求头获取token（与收藏逻辑一致）
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null) {
@@ -149,8 +150,7 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
         // 修正后：更新状态为“已取消”
         exist.setFavoriteStatus(UserFavorites.STATUS_CANCELLED);
         baseMapper.updateById(exist);
-        // 若使用物理删除：
-        // baseMapper.deleteByUserIdTargetIdAndType(userId, targetId, targetType);
+        return exist;  // 返回更新后的收藏信息（包含取消状态）
     }
     // 原方法：获取部门ID列表
     @Override

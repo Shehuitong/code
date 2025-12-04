@@ -24,11 +24,11 @@ public interface UserFavoritesService extends IService<UserFavorites> {
 
     // 统计用户收藏的活动数量
     int countFavoriteActivities(Long userId);
-    // 收藏（参数：目标ID、类型）
-    void addFavorite(Long targetId, String targetType);
+    // 收藏（参数：目标ID、类型，返回完整收藏信息）
+    UserFavorites addFavorite(Long targetId, String targetType);
 
-    // 取消收藏（参数：目标ID、类型）
-    void cancelFavorite(Long targetId, String targetType);
+    // 取消收藏（参数：目标ID、类型，返回完整收藏信息）
+    UserFavorites cancelFavorite(Long targetId, String targetType);
     /**
      * 统计部门的关注人数
      * @param departmentId 部门ID

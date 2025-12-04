@@ -122,7 +122,7 @@ Content-Type: application/json
   "location": "外国语学院302会议室",
   "applyGrade": "2023级+2024级+2025级",
   "applyCollege": "外国语学院",
-  "applyTime": "2025-12-05T00:00:00",
+  "applyTime": "2025-12-05T02:00:00",
   "applyDeadline": "2025-12-15T23:59:59",
   "scoreType": "1.4.人文与科学素养",
   "score": 3.50,
@@ -205,7 +205,7 @@ Content-Type: application/json
   "location": "测试会议室",
   "applyGrade": "2022级",
   "applyCollege": "外国语学院",
-  "applyTime": "2025-12-03T20:09:00",
+  "applyTime": "2025-12-05T20:09:00",
   "applyDeadline": "2025-12-20T23:59:59",
   "scoreType": "1.4.人文与科学素养",
   "score": 3.00,
@@ -227,13 +227,13 @@ Content-Type: application/json
 
 
 ### 【场景10】已报名用户报名该活动
-POST http://localhost:8080/api/registration/activity/7
+POST http://localhost:8080/api/registration/activity/8
 Authorization: Bearer {{registeredUserToken}}
 Content-Type: application/json
 
 {
   "userId": 1,
-  "activityId": 7
+  "activityId": 8
 }
 
 
