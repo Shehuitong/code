@@ -124,7 +124,7 @@ public interface ActivityMapper extends BaseMapper<Activity> {
             @Result(column = "department_id", property = "department.departmentId"),
             @Result(column = "department_name", property = "department.departmentName"),
             @Result(column = "description", property = "department.description"),
-            @Result(column = "avatar", property = "department.avatar"),
+            @Result(column = "logo_url", property = "department.avatar"),
             @Result(column = "department_college", property = "department.departmentCollege")
     })
     Activity selectActivityWithDeptById(@Param("activityId") Long activityId);
@@ -169,7 +169,7 @@ public interface ActivityMapper extends BaseMapper<Activity> {
             @Result(column = "department_id", property = "department.departmentId"),
             @Result(column = "department_name", property = "department.departmentName"),
             @Result(column = "description", property = "department.description"),
-            @Result(column = "avatar", property = "department.avatar"),
+            @Result(column = "logo_url", property = "department.avatar"),
             @Result(column = "department_college", property = "department.departmentCollege")
     })
     IPage<Activity> selectActivityPageWithDept(
@@ -216,7 +216,7 @@ public interface ActivityMapper extends BaseMapper<Activity> {
             @Result(column = "department_id", property = "department.departmentId"),
             @Result(column = "department_name", property = "department.departmentName"),
             @Result(column = "description", property = "department.description"),
-            @Result(column = "avatar", property = "department.avatar"),
+            @Result(column = "logo_url", property = "department.avatar"),
             @Result(column = "department_college", property = "department.departmentCollege")
     })
     List<Activity> selectAllActivityWithDept(@Param("offlineStatus") ActivityStatusEnum offlineStatus);
@@ -259,7 +259,7 @@ public interface ActivityMapper extends BaseMapper<Activity> {
             @Result(column = "department_id", property = "department.departmentId"),
             @Result(column = "department_name", property = "department.departmentName"),
             @Result(column = "description", property = "department.description"),
-            @Result(column = "avatar", property = "department.avatar"),
+            @Result(column = "logo_url", property = "department.avatar"),
             @Result(column = "department_college", property = "department.departmentCollege")
     })
     List<Activity> selectAllActivityWithDeptByKeyword(
