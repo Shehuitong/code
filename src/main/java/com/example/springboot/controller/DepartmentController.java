@@ -4,6 +4,7 @@ package com.example.springboot.controller;
 import com.example.springboot.common.Result;
 import com.example.springboot.dto.DepartmentDetailDTO;
 import com.example.springboot.dto.DepartmentUpdateDTO;
+import com.example.springboot.entity.Activity;
 import com.example.springboot.entity.Admin;
 import com.example.springboot.excption.BusinessErrorException;
 import com.example.springboot.service.AdminService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -70,5 +72,17 @@ public class DepartmentController {
         result.put("followCount", followCount);
 
         return Result.success(result);
+    }
+
+    // 新增：查看部门发布的活动列表
+    @GetMapping("/activities")
+    public Result<List<Activity>> getDepartmentActivities(
+            @RequestParam("departmentId") Long departmentId) {
+        // 参数校验
+        if (departmentId == null) {
+            return Result.error("部门ID不能为空");
+        }
+        List<Activity> activities = departmentService.getDepartmentActivities(departmentId);
+        return Result.success(activities);
     }
 }

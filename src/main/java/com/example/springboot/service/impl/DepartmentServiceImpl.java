@@ -124,4 +124,18 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
     private String getFileSuffix(String originalFilename) {
         return originalFilename.substring(originalFilename.lastIndexOf("."));
     }
+//查看该部门发布的活动列表
+    @Override
+    public List<Activity> getDepartmentActivities(Long departmentId) {
+        // 1. 校验部门是否存在
+        Department department = getByDeptId(departmentId);
+        if (department == null) {
+            throw new BusinessErrorException("部门不存在");
+        }
+
+        // 2. 查询该部门举办的所有活动
+        return activityService.list(new LambdaQueryWrapper<Activity>()
+                .eq(Activity::getDepartmentId, departmentId)
+                .orderByDesc(Activity::getCreatedTime)); // 按创建时间倒序，最新的在前
+    }
 }
