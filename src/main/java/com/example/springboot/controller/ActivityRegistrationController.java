@@ -1,6 +1,7 @@
 package com.example.springboot.controller;
 
 import com.example.springboot.common.Result;
+import com.example.springboot.dto.ActivityRegistrationDetailDTO;
 import com.example.springboot.entity.ActivityRegistration;
 import com.example.springboot.excption.BusinessErrorException; // 修正包名拼写：excption→exception
 import com.example.springboot.service.ActivityRegistrationService;
@@ -9,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/registration") // 保持接口前缀一致
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ public class ActivityRegistrationController {
 
     private final ActivityRegistrationService registrationService;
     private final JwtUtil jwtUtil;
+    private final ActivityRegistrationService activityRegistrationService;
 
     // 辅助方法：从Token获取当前登录用户ID（完善异常提示）
     private Long getCurrentUserId(HttpServletRequest request) {
@@ -73,6 +77,20 @@ public class ActivityRegistrationController {
             return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("取消报名失败：" + e.getMessage());
+        }
+    }
+    @GetMapping("/user-details")
+    public Result<List<ActivityRegistrationDetailDTO>> getUserRegistrationDetails(HttpServletRequest request) {
+        try {
+            // 从请求头的Token中解析用户ID（无需前端传userId）
+            String token = request.getHeader("Authorization").replace("Bearer ", "");
+            Long userId = jwtUtil.getUserId(token); // 依赖JwtUtil工具类
+
+            // 调用Service查询
+            List<ActivityRegistrationDetailDTO> details = activityRegistrationService.getUserRegistrationDetails(userId);
+            return Result.success(details);
+        } catch (Exception e) {
+            return Result.error("查询失败：" + e.getMessage());
         }
     }
 }

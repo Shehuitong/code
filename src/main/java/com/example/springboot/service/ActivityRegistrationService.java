@@ -2,6 +2,7 @@ package com.example.springboot.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.springboot.dto.ActivityRegistrationDTO;
+import com.example.springboot.dto.ActivityRegistrationDetailDTO;
 import com.example.springboot.entity.ActivityRegistration;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -48,5 +49,6 @@ public interface ActivityRegistrationService extends IService<ActivityRegistrati
      * @return 报名用户ID列表
      */
     List<Long> getUserIdsByActivityId(Long activityId);
+    List<ActivityRegistrationDetailDTO> getUserRegistrationDetails(Long userId);
 
 }

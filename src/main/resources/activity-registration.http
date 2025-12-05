@@ -125,6 +125,11 @@ Content-Type: application/json
     }
 %}
 
+###
+GET http://localhost:8080/api/registration/user-details
+Authorization: Bearer {{user4Token}}
+Content-Type: application/json
+
 
 ### 7. 验证活动1名额变化（剩余-1，已报名+1）
 ###3. 活动详情接口
@@ -183,7 +188,10 @@ Content-Type: application/json // 补充Content-Type，匹配后端接收要求
         console.error("❌ 用户4取消报名脚本错误：" + e.message);
     }
 %}
-
+###
+GET http://localhost:8080/api/registration/user-details
+Authorization: Bearer {{user4Token}}
+Content-Type: application/json
 
 ### 10. 验证活动1名额恢复（剩余+1，已报名-1）
 GET http://localhost:8080/api/activity/1

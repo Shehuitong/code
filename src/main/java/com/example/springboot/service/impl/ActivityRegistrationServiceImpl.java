@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.springboot.dto.ActivityDetailDTO;
 import com.example.springboot.dto.ActivityRegistrationDTO;
+import com.example.springboot.dto.ActivityRegistrationDetailDTO;
 import com.example.springboot.dto.ActivityRegistrationExcelDTO;
 import com.example.springboot.entity.Activity;
 import com.example.springboot.entity.ActivityRegistration;
@@ -463,6 +464,49 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         }
         // 兜底返回（理论上不会走到这里）
         throw new BusinessErrorException("报名操作异常");
+    }
+    @Override
+    public List<ActivityRegistrationDetailDTO> getUserRegistrationDetails(Long userId) {
+        // 1. 校验用户ID
+        if (userId == null) {
+            log.error("查询报名状态失败：用户ID为空");
+            throw new BusinessErrorException("用户ID不能为空");
+        }
+
+        // 2. 查询用户所有报名记录（含各种状态：已报名、已取消等）
+        LambdaQueryWrapper<ActivityRegistration> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ActivityRegistration::getUserId, userId)
+                .orderByDesc(ActivityRegistration::getRegistrationId); // 按报名时间倒序
+        List<ActivityRegistration> registrations = baseMapper.selectList(wrapper);
+
+        if (registrations.isEmpty()) {
+            log.info("用户{}暂无任何报名记录", userId);
+            return Collections.emptyList();
+        }
+
+        // 3. 批量查询关联的活动信息
+        Set<Long> activityIds = registrations.stream()
+                .map(ActivityRegistration::getActivityId)
+                .collect(Collectors.toSet());
+        List<Activity> activities = activityMapper.selectBatchIds(activityIds);
+        Map<Long, Activity> activityMap = activities.stream()
+                .collect(Collectors.toMap(Activity::getActivityId, a -> a));
+
+        // 4. 组装详细DTO
+        return registrations.stream()
+                .map(registration -> {
+                    Activity activity = activityMap.get(registration.getActivityId());
+                    if (activity == null) {
+                        log.warn("报名记录{}关联的活动已删除", registration.getRegistrationId());
+                        // 处理活动已删除的情况
+                        Activity deletedActivity = new Activity();
+                        deletedActivity.setActivityId(registration.getActivityId());
+                        deletedActivity.setActivityName("【已删除活动】");
+                        return ActivityRegistrationDetailDTO.from(registration, deletedActivity);
+                    }
+                    return ActivityRegistrationDetailDTO.from(registration, activity);
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
