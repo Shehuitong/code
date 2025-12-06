@@ -26,4 +26,7 @@ Accept: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 ###所有活动详情
 GET http://localhost:8080/api/activity/all
 ###所有部门
-GET http://localhost:8080/api/department/all/detail
+GET http://localhost:8080/api/department/all/detail、
+
+###查看活動報名人員信息
+GET http://localhost:8080/api/admin/activity/registrations/1

@@ -2,7 +2,7 @@ package com.example.springboot.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.springboot.dto.ActivityRegistrationDTO;
-import com.example.springboot.dto.ActivityRegistrationDetailDTO;
+import com.example.springboot.dto.ActivityRegistrationExcelDTO;
 import com.example.springboot.entity.ActivityRegistration;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -23,7 +23,13 @@ public interface ActivityRegistrationService extends IService<ActivityRegistrati
      */
     List<ActivityRegistrationDTO> getMyRegisteredActivities(Long userId);
     int countByUserId(Long userId);
-
+    /**
+     * 获取活动已报名用户信息列表（与Excel导出内容一致）
+     * @param activityId 活动ID
+     * @return 报名用户信息DTO列表
+     * @throws RuntimeException 业务异常（活动不存在等）
+     */
+    List<ActivityRegistrationExcelDTO> getRegisteredUsers(Long activityId);
     List<ActivityRegistrationDTO> getUserRegistrationDTOs(Long currentUserId);
 
     /**
@@ -39,16 +45,15 @@ public interface ActivityRegistrationService extends IService<ActivityRegistrati
      * @param userId 用户ID
      * @return 报名活动列表（带部门ID+名称）
      */
-    // 原返回类型为 void，改为 ActivityRegistration
-    ActivityRegistration registerActivity(Long userId, Long activityId);
+    // 新增：用户报名活动
+    void registerActivity(Long userId, Long activityId);
 
-    // 原返回类型为 void，改为 ActivityRegistration
-    ActivityRegistration cancelRegistration(Long userId, Long activityId);/**
+    // 新增：用户取消报名
+    void cancelRegistration(Long userId, Long activityId);/**
      * 根据活动ID查询所有报名用户的ID
      * @param activityId 活动ID
      * @return 报名用户ID列表
      */
     List<Long> getUserIdsByActivityId(Long activityId);
-    List<ActivityRegistrationDetailDTO> getUserRegistrationDetails(Long userId);
 
 }

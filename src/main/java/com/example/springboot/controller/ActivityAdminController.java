@@ -1,5 +1,6 @@
 package com.example.springboot.controller;
 import com.example.springboot.common.Result;
+import com.example.springboot.dto.ActivityRegistrationExcelDTO;
 import com.example.springboot.service.ActivityRegistrationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/activity")
@@ -45,7 +47,26 @@ public class ActivityAdminController {
             handleException(response, 500, "文件导出失败：" + e.getMessage());
         }
     }
-
+    /**
+     * 查看活动已报名用户信息（与导出Excel内容一致）
+     * 请求示例：http://localhost:8080/api/admin/activity/registrations/1
+     */
+    @GetMapping("/registrations/{activityId}")
+    public Result<List<ActivityRegistrationExcelDTO>> getRegisteredUsers(
+            @PathVariable Long activityId
+    ) {
+        try {
+            // 调用服务层获取报名用户信息列表
+            List<ActivityRegistrationExcelDTO> userList = activityRegistrationService.getRegisteredUsers(activityId);
+            return Result.success(userList);
+        } catch (IllegalArgumentException e) {
+            // 移除状态码参数，仅传入错误信息
+            return Result.error("参数错误：" + e.getMessage());
+        } catch (RuntimeException e) {
+            // 移除状态码参数，仅传入错误信息
+            return Result.error("系统错误：" + e.getMessage());
+        }
+    }
     /**
      * 统一异常处理：往响应流写JSON格式的Result（避免ResponseEntity冲突）
      * @param response 响应对象

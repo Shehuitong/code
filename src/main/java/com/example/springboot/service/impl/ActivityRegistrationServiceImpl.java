@@ -303,8 +303,73 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         }
     }
 
+    @Override
+    public List<ActivityRegistrationExcelDTO> getRegisteredUsers(Long activityId) {
+        // 1. 校验活动ID
+        if (activityId == null) {
+            throw new IllegalArgumentException("活动ID不能为空");
+        }
+
+        // 2. 校验活动是否存在
+        Activity activity = activityMapper.selectById(activityId);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在");
+        }
+
+        List<ActivityRegistration> registrations = baseMapper.selectList(
+                new LambdaQueryWrapper<ActivityRegistration>()
+                        .eq(ActivityRegistration::getActivityId, activityId)
+                        .select(
+                                ActivityRegistration::getRegistrationId,
+                                ActivityRegistration::getUserId, // 对应数据库的`id`列
+                                ActivityRegistration::getActivityId,
+                                ActivityRegistration::getRegistrationStatus,
+                                ActivityRegistration::getRegistrationId
+                        )
+                        .orderByAsc(ActivityRegistration::getRegistrationId)
+        );
 
 
+        if (CollectionUtils.isEmpty(registrations)) {
+            return Collections.emptyList();
+        }
+
+        // 4. 获取所有报名用户ID
+        List<Long> userIds = registrations.stream()
+                .map(ActivityRegistration::getUserId)
+                .collect(Collectors.toList());
+
+        // 5. 查询用户信息（用户表直接存储学院信息）
+        List<User> users = userMapper.selectBatchIds(userIds);
+        Map<Long, User> userMap = users.stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        // 6. 组装DTO列表（直接使用用户的college字段，无需关联部门）
+        List<ActivityRegistrationExcelDTO> result = new ArrayList<>();
+        for (int i = 0; i < registrations.size(); i++) {
+            ActivityRegistration registration = registrations.get(i);
+            User user = userMap.get(registration.getUserId());
+            if (user == null) {
+                log.warn("活动[{}]的报名记录[{}]关联的用户[{}]不存在",
+                        activityId, registration.getRegistrationId(), registration.getUserId());
+                continue;
+            }
+
+            ActivityRegistrationExcelDTO dto = new ActivityRegistrationExcelDTO();
+            dto.setSerialNumber(i + 1); // 序号从1开始
+            dto.setUserName(user.getUsername());
+            dto.setStudentId(user.getStudentId());
+            dto.setGrade(user.getGrade().getDesc()); // 年级信息
+            dto.setPhone(user.getPhone());
+
+            // 核心修正：用户学院直接取自User表的college字段（无需通过部门查询）
+            dto.setCollege(user.getCollege() != null ? user.getCollege().getDesc(): "未知学院");
+
+            result.add(dto);
+        }
+
+        return result;
+    }
 
     @Override
     public List<ActivityRegistrationDTO> getUserRegistrationDTOs(Long currentUserId) {
