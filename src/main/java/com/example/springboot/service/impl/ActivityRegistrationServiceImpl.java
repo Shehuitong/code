@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 // 假设你的 UserMapper 在 com.example.springboot.mapper 包下（重点看包路径）
 import com.example.springboot.mapper.UserMapper;
-import com.example.springboot.mapper.ActivityRegistrationMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -530,6 +529,8 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         // 兜底返回（理论上不会走到这里）
         throw new BusinessErrorException("报名操作异常");
     }
+
+
     @Override
     public List<ActivityRegistrationDetailDTO> getUserRegistrationDetails(Long userId) {
         // 1. 校验用户ID
