@@ -192,9 +192,14 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
 
     @Override
     public List<ActivityRegistration> getRegistrationsByUserId(Long userId) {
-        LambdaQueryWrapper<ActivityRegistration> wrapper = new LambdaQueryWrapper<ActivityRegistration>()
-                .eq(ActivityRegistration::getUserId, userId);
-        return baseMapper.selectList(wrapper);
+        if (userId == null) {
+            throw new BusinessErrorException("用户ID不能为空");
+        }
+        // 仅查询基础报名记录，不关联用户和活动表
+        LambdaQueryWrapper<ActivityRegistration> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActivityRegistration::getUserId, userId);
+        // 直接返回原始报名记录（不含user和activity字段）
+        return baseMapper.selectList(queryWrapper);
     }
 
     @Override

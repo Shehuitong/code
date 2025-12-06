@@ -101,34 +101,10 @@ POST http://localhost:8080/api/registration/activity/1
 Authorization: Bearer {{user4Token}}
 Content-Type: application/json
 
-{
-  "activityId": 1,
-  "userId": 4
-}
-
-> {%
-    try {
-        const contentType = response.headers.get("Content-Type") || "";
-        if (contentType.includes("text/html")) {
-            console.error("❌ 报名接口返回HTML错误页：状态码=" + response.status + "，响应内容：" + response.body);
-        } else {
-            const resBody = response.body || {};
-            console.log("🔍 用户4报名响应体：" + JSON.stringify(resBody)); // 打印完整响应定位错误
-            if (resBody.code === 200) {
-                console.log("✅ 用户4报名活动1成功：" + resBody.message);
-            } else {
-                console.error("❌ 用户4报名活动1失败：" + (resBody.message || "未知错误") + "，响应码=" + resBody.code + "，错误详情=" + (resBody.data || "无"));
-            }
-        }
-    } catch (e) {
-        console.error("❌ 用户4报名脚本错误：" + e.message + "，错误栈：" + e.stack);
-    }
-%}
-
 ###
-GET http://localhost:8080/api/registration/user-details
+GET http://localhost:8080/api/user/actions
 Authorization: Bearer {{user4Token}}
-Content-Type: application/json
+Accept: application/json
 
 
 ### 7. 验证活动1名额变化（剩余-1，已报名+1）
@@ -189,10 +165,9 @@ Content-Type: application/json // 补充Content-Type，匹配后端接收要求
     }
 %}
 ###
-GET http://localhost:8080/api/registration/user-details
+GET http://localhost:8080/api/user/actions
 Authorization: Bearer {{user4Token}}
-Content-Type: application/json
-
+Accept: application/json
 ### 10. 验证活动1名额恢复（剩余+1，已报名-1）
 GET http://localhost:8080/api/activity/1
 Authorization: Bearer {{adminToken}}
@@ -282,8 +257,6 @@ Content-Type: application/json
         console.error("❌ 年级校验脚本错误：" + e.message);
     }
 %}
-
-
 ### 13. 管理员报名活动1（权限校验）
 POST http://localhost:8080/api/registration/activity/1
 Authorization: Bearer {{adminToken}}
@@ -347,33 +320,7 @@ GET http://localhost:8080/api/registration/my
 Authorization: Bearer {{user2Token}}
 Accept: application/json
 
-> {%
-    try {
-        const contentType = response.headers.get("Content-Type") || "";
-        if (contentType.includes("text/html")) {
-            console.error("❌ 报名列表接口返回HTML错误页：状态码=" + response.status);
-        } else {
-            const resBody = response.body || {};
-            console.log("🔍 用户2报名列表响应体：" + JSON.stringify(resBody));
-            if (resBody.code === 200) {
-                const data = resBody.data || [];
-                let hasActivity3 = false;
-                for (let i = 0; i < data.length; i++) {
-                    console.log("📌 报名记录" + i + "：" + JSON.stringify(data[i])); // 打印每条报名记录
-                    if (data[i].activityId === 3 || (data[i].activity && data[i].activity.activityId === 3)) {
-                        hasActivity3 = true;
-                        break;
-                    }
-                }
-                console.log("用户2报名列表是否包含活动3：" + (hasActivity3 ? "✅ 是（正确）" : "❌ 否（错误）"));
-            } else {
-                console.error("❌ 查询个人报名列表失败：" + (resBody.message || "未知错误") + "，响应码=" + resBody.code);
-            }
-        }
-    } catch (e) {
-        console.error("❌ 个人报名列表查询脚本错误：" + e.message + "，错误栈：" + e.stack);
-    }
-%}
+
 
 
 ### 16. 模拟活动1名额已满（需手动将数据库中activity1的remaining_people改为0后执行）

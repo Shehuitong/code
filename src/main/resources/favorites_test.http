@@ -66,7 +66,7 @@ targetId=3&targetType=ACTIVITY
 
 
 ### 【场景2】验证用户1的活动收藏结果（查询收藏的活动）
-GET http://localhost:8080/api/user/favorites/activities
+GET http://localhost:8080/api/user/actions
 Authorization: Bearer {{user1Token}}
 Accept: application/json
 
@@ -88,7 +88,7 @@ targetId=2&targetType=DEPARTMENT
 
 
 ### 【场景5】验证用户1的部门收藏结果（查询收藏的部门）
-GET http://localhost:8080/api/user/favorites/departments
+GET http://localhost:8080/api/user/actions
 Authorization: Bearer {{user1Token}}
 Accept: application/json
 
@@ -110,7 +110,7 @@ targetId=3&targetType=ACTIVITY
 
 
 ### 【场景8】验证活动3取消结果（查询收藏的活动）
-GET http://localhost:8080/api/user/favorites/activities
+GET http://localhost:8080/api/user/actions
 Authorization: Bearer {{user1Token}}
 Accept: application/json
 
@@ -154,6 +154,6 @@ targetId=2&targetType=DEPARTMENT
 
 
 ### 【场景14】验证部门2取消结果（查询收藏的部门）
-GET http://localhost:8080/api/user/favorites/departments
+GET http://localhost:8080/api/user/actions
 Authorization: Bearer {{user1Token}}
 Accept: application/json

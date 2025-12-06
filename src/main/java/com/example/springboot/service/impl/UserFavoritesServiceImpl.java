@@ -295,4 +295,12 @@ public class UserFavoritesServiceImpl extends ServiceImpl<UserFavoritesMapper, U
                 .distinct() // 去重，避免重复通知同一用户
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<UserFavorites> getUserAllFavorites(Long userId) {
+        if (userService.getById(userId) == null) {
+            throw new BusinessErrorException("用户不存在");
+        }
+        // 查询用户所有类型的收藏记录
+        return baseMapper.selectByUserIdAndType(userId, null);
+    }
 }
