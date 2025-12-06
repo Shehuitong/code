@@ -93,8 +93,8 @@ public interface ActivityMapper extends BaseMapper<Activity> {
 
     // 新增：单个ID查询活动+关联部门完整信息（用于详情页）
     @Select("SELECT a.*, d.* " +
-            "FROM activity a " +
-            "LEFT JOIN department d ON a.department_id = d.department_id " +
+            "FROM Activity a " +
+            "LEFT JOIN Department d ON a.department_id = d.department_id " +
             "WHERE a.activity_id = #{activityId}")
     @Results({
             // 映射活动表字段（与Activity实体一致）

@@ -14,7 +14,7 @@ import lombok.Data; // Lombok注解，自动生成getter/setter等方法
 @TableName("`user`") // 绑定数据库普通用户表（表名可根据实际调整）
 public class User {
     //@TableId(value = "user_id", type = IdType.AUTO)
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "user_id", type = IdType.AUTO)
     private Long Id;
 
     private String studentId;

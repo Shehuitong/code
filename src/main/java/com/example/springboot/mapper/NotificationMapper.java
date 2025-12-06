@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface NotificationMapper extends BaseMapper<Notification> {
     // 根据用户ID查询通知
-    @Select("SELECT * FROM notification WHERE user_id = #{userId} ORDER BY create_time DESC")
+    @Select("SELECT * FROM Notification WHERE user_id = #{userId} ORDER BY send_time DESC")
     List<Notification> getByUserId(Long userId);
 }

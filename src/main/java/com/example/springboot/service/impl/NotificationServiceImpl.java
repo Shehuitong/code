@@ -21,7 +21,6 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setUserId(userId);
         notification.setContent(content);
         notification.setCreateTime(LocalDateTime.now());
-        notification.setIsRead(0);  // 初始为未读
         notificationMapper.insert(notification);
     }
 

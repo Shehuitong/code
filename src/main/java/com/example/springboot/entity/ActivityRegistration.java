@@ -13,7 +13,7 @@ public class ActivityRegistration {
     @TableId(value = "registration_id", type = IdType.AUTO)
     private Long registrationId; // 报名记录主键ID
 
-    @TableField(value = "id", insertStrategy = FieldStrategy.NOT_NULL)
+    @TableField(value = "user_id", insertStrategy = FieldStrategy.NOT_NULL)
     private Long userId; // 关联用户表ID（外键，非空）
 
     @TableField(value = "activity_id",insertStrategy = FieldStrategy.NOT_NULL)

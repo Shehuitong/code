@@ -30,10 +30,15 @@ public interface DepartmentMapper extends BaseMapper<Department> {
             "description, " +
             "logo_url " +
             "FROM Department " +
-            "WHERE department_id IN " +
-            "<foreach collection='ids' item='id' open='(' separator=',' close=')'>" + // item设为id（极简）
-            "   #{id}" + // 对应item名，不用记复杂代号
-            "</foreach>" +
+            // 核心：添加空值判断，只有ids非空时才拼接WHERE条件
+            "<where>" +
+            "   <if test='ids != null and ids.size() > 0'>" +
+            "       department_id IN " +
+            "       <foreach collection='ids' item='id' open='(' separator=',' close=')'>" +
+            "           #{id}" +
+            "       </foreach>" +
+            "   </if>" +
+            "</where>" +
             "</script>")
     List<Department> selectDeptWithName(@Param("ids") List<Long> ids);
 }
