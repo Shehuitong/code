@@ -145,7 +145,7 @@ Content-Type: application/json
 
 ### 【场景4】验证收藏用户收到通知
 GET http://localhost:8080/api/user/notifications
-Authorization: Bearer {{collectUserToken}}
+Authorization: Bearer {{user1Token}}
 Accept: application/json
 
 
@@ -189,7 +189,7 @@ Content-Type: application/json
 
 ### 【场景8】验证取消收藏后无通知
 GET http://localhost:8080/api/user/notifications
-Authorization: Bearer {{collectUserToken}}
+Authorization: Bearer {{user1Token}}}
 Accept: application/json
 
 

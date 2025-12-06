@@ -80,7 +80,10 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         activity.setFollowerCount(0);
         activity.setHoldCollege(activityDTO.getHoldCollege());
         activity.setApplyGrade(activityDTO.getApplyGrade());
-
+        // 2. 提取活动ID（解决activityId未定义问题）
+        Long activityId = activity.getActivityId();
+        // 3. 复用入参departmentId（解决relatedDepartmentId未定义问题）
+        Long relatedDepartmentId = departmentId;
         // 保存活动信息
         baseMapper.insert(activity);
         // 新增：发送收藏部门用户的通知
@@ -90,7 +93,8 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         // 2.2 向每个用户发送通知
         String notificationContent = "您收藏的部门发布新活动了！";
         for (Long userId : favoriteUserIds) {
-            notificationService.sendNotification(userId, notificationContent);
+
+            notificationService.sendNotification(userId, notificationContent,activityId, relatedDepartmentId);
         }
         return activity;
     }
@@ -165,11 +169,11 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         baseMapper.updateById(activity);
         // 查询该活动的所有报名用户ID
         List<Long> registeredUserIds = activityRegistrationService.getUserIdsByActivityId(activityId);
-
+        Long relatedDepartmentId = departmentId;
         // 向每个报名用户发送通知
         String notificationContent = "您报名的活动有变动！请查看！";
         for (Long userId : registeredUserIds) {
-            notificationService.sendNotification(userId, notificationContent);
+            notificationService.sendNotification(userId, notificationContent,activityId, relatedDepartmentId);
         }
         return activity;
     }

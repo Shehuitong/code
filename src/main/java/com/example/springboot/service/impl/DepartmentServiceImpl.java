@@ -11,6 +11,7 @@ import com.example.springboot.entity.Activity;
 import com.example.springboot.entity.Department;
 import com.example.springboot.excption.BusinessErrorException;
 import com.example.springboot.mapper.DepartmentMapper;
+import com.example.springboot.service.UserFavoritesService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,8 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
 
     @Autowired
     private ActivityService activityService; // 注入活动服务，查询部门举办的活动
+    @Autowired
+    private UserFavoritesService userFavoriesService; // 注入活动服务，查询部门举办的活动
 
     // 根据部门ID查询部门
     @Override
@@ -98,11 +101,12 @@ public class DepartmentServiceImpl extends ServiceImpl<DepartmentMapper, Departm
                 .eq(Activity::getDepartmentId, departmentId));
 
         activities.forEach(activity -> activity.setDepartment(department));
-
+        int followCount =  userFavoriesService.countDepartmentFollowers(departmentId);
         // 3. 组装DTO返回
         DepartmentDetailDTO detailDTO = new DepartmentDetailDTO();
         detailDTO.setDepartment(department);
         detailDTO.setActivities(activities);
+        detailDTO.setFollowCount(followCount);
         return detailDTO;
     }
 

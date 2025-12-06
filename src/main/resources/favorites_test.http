@@ -5,8 +5,8 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "account": "202200101",
-  "password": "Aa202200101"
+  "account": "202210001",
+  "password": "Aa123456"
 }
 > {%
     const res = response.body || {};
@@ -58,13 +58,19 @@ Content-Type: application/json
 
 
 ### 【场景1】用户1收藏新活动（活动3：志愿者招募活动）
-POST http://localhost:8080/favorites/add
+POST http://localhost:8080/favorites/activity/add?activityId=71&userId=1
 Authorization: Bearer {{user1Token}}
 Content-Type: application/x-www-form-urlencoded
 
-targetId=3&targetType=ACTIVITY
+#targetId=64&targetType=ACTIVITY
 
 
+### 【场景1】用户1收藏新部門（活动3：志愿者招募活动）
+POST http://localhost:8080/favorites/department/add?departmentId=23&userId=1
+Authorization: Bearer {{user1Token}}
+Content-Type: application/x-www-form-urlencoded
+
+targetId=23&targetType=DEPARTMENT
 ### 【场景2】验证用户1的活动收藏结果（查询收藏的活动）
 GET http://localhost:8080/api/user/actions
 Authorization: Bearer {{user1Token}}

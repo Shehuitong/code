@@ -96,8 +96,11 @@ public class ActivityReminderTask {
                         continue;
                     }
 
-                    // 发送通知
-                    notificationService.sendNotification(userId, notificationContent);
+                    Activity currentActivity = activityMap.get(activityId);
+// 2. 提取活动所属部门ID（需确保Activity类有getDepartmentId()方法，字段名按实际调整）
+                    Long relatedDepartmentId = currentActivity.getDepartmentId();
+// 3. 调用通知服务：relatedActivityId直接使用activityId
+                    notificationService.sendNotification(userId, notificationContent, activityId, relatedDepartmentId);
                     // 记录日志（关联用户+活动）
                     recordReminderLog(userId, activityId);
                     log.info("已向用户[{}]发送活动[{}]的报名提醒", userId, activityId);

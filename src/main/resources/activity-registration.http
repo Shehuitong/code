@@ -97,13 +97,13 @@ Content-Type: application/json
 GET http://localhost:8080/api/activity/detail/1
 
 ### 6. 用户4（2025级）报名活动1（显式传递请求体参数）
-POST http://localhost:8080/api/registration/activity/1
-Authorization: Bearer {{user4Token}}
+POST http://localhost:8080/api/registration/activity/70
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
 ###
 GET http://localhost:8080/api/user/actions
-Authorization: Bearer {{user4Token}}
+Authorization: Bearer {{user1Token}}
 Accept: application/json
 
 
@@ -143,7 +143,7 @@ Content-Type: application/json
 
 ### 9. 用户4取消活动1报名
 DELETE http://localhost:8080/api/registration/activity/1
-Authorization: Bearer {{user4Token}}
+Authorization: Bearer {{user1Token}}
 Content-Type: application/json // 补充Content-Type，匹配后端接收要求
 
 > {%

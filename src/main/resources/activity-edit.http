@@ -28,7 +28,7 @@ Content-Type: application/json
 %}
 
 ### 3. 正常编辑活动（所有字段合法，整数ID）
-PUT http://localhost:8080/api/admin/activities/{{testActivityId}}
+PUT http://localhost:8080/api/admin/activities/70
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
@@ -38,7 +38,7 @@ Content-Type: application/json
   "holdEndTime": "2025-12-25T18:00:00",
   "location": "图书馆一楼学术报告厅（改）",
   "scoreType": "1.4.人文与科学素养",
-  "score": 6.00,
+  "score": 600.00,
   "volunteerHours": 1.5,
   "activityDesc": "本次数学建模进阶讲座修订版，新增竞赛真题解析环节，邀请资深导师现场指导，涵盖建模工具使用、论文写作技巧等核心内容，参与即可获得德育加分及志愿时长认证！"
 }

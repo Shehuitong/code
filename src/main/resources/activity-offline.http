@@ -56,7 +56,7 @@ Content-Type: application/json
 %}
 
 ### 4. 执行手动下架操作（调用下架接口）
-PUT http://localhost:8080/api/admin/activities/{{testActivityId}}/offline
+PUT http://localhost:8080/api/admin/activities/63/offline
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 

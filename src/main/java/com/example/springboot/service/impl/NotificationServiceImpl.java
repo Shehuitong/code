@@ -16,11 +16,15 @@ public class NotificationServiceImpl implements NotificationService {
 
     // 发送通知（定时任务触发时调用）
     @Override
-    public void sendNotification(Long userId, String content) {
+    public void sendNotification(Long userId, String content,Long relatedActivityId,  // 新增：关联活动ID
+                                 Long relatedDepartmentId) {
         Notification notification = new Notification();
         notification.setUserId(userId);
         notification.setContent(content);
-        notification.setCreateTime(LocalDateTime.now());
+        // 自动复制关联ID到实体中
+        notification.setRelatedActivityId(relatedActivityId);  // 复制活动ID
+        notification.setRelatedDepartmentId(relatedDepartmentId); // 复制部门ID
+         notification.setCreateTime(LocalDateTime.now());
         notificationMapper.insert(notification);
     }
 
