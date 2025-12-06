@@ -310,51 +310,46 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
     @Override
     public List<ActivityRegistrationExcelDTO> getRegisteredUsers(Long activityId) {
         // 1. 校验活动ID
-        if (activityId == null) {
-            throw new IllegalArgumentException("活动ID不能为空");
+        if (activityId == null || activityId <= 0) {
+            log.error("活动ID无效：{}", activityId);
+            throw new IllegalArgumentException("活动ID无效");
         }
 
-        // 2. 校验活动是否存在
+        // 2. 查询活动（确认存在）
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) {
+            log.error("活动[{}]不存在", activityId);
             throw new RuntimeException("活动不存在");
         }
 
-        List<ActivityRegistration> registrations = baseMapper.selectList(
-                new LambdaQueryWrapper<ActivityRegistration>()
-                        .eq(ActivityRegistration::getActivityId, activityId)
-                        .select(
-                                ActivityRegistration::getRegistrationId,
-                                ActivityRegistration::getUserId, // 对应数据库的`id`列
-                                ActivityRegistration::getActivityId,
-                                ActivityRegistration::getRegistrationStatus,
-                                ActivityRegistration::getRegistrationId
-                        )
-                        .orderByAsc(ActivityRegistration::getRegistrationId)
-        );
+        // 3. 关键修改：仅查询状态为“已报名”的记录
+        LambdaQueryWrapper<ActivityRegistration> registrationWrapper = new LambdaQueryWrapper<>();
+        registrationWrapper.eq(ActivityRegistration::getActivityId, activityId)
+                .eq(ActivityRegistration::getRegistrationStatus, RegistrationStatusEnum.APPLIED); // 过滤已报名状态
 
+        List<ActivityRegistration> registrations = baseMapper.selectList(registrationWrapper);
+        log.info("活动[{}]查询到的有效报名记录数（已报名）：{}", activityId, registrations.size());
 
         if (CollectionUtils.isEmpty(registrations)) {
+            log.info("活动[{}]暂无已报名用户", activityId);
             return Collections.emptyList();
         }
 
-        // 4. 获取所有报名用户ID
-        List<Long> userIds = registrations.stream()
+        // 4. 批量查询关联的用户信息
+        Set<Long> userIds = registrations.stream()
                 .map(ActivityRegistration::getUserId)
-                .collect(Collectors.toList());
-
-        // 5. 查询用户信息（用户表直接存储学院信息）
+                .collect(Collectors.toSet());
         List<User> users = userMapper.selectBatchIds(userIds);
         Map<Long, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
-        // 6. 组装DTO列表（直接使用用户的college字段，无需关联部门）
+        // 5. 组装ExcelDTO（补充序号）
         List<ActivityRegistrationExcelDTO> result = new ArrayList<>();
         for (int i = 0; i < registrations.size(); i++) {
             ActivityRegistration registration = registrations.get(i);
             User user = userMap.get(registration.getUserId());
             if (user == null) {
-                log.warn("活动[{}]的报名记录[{}]关联的用户[{}]不存在",
+                log.warn("活动[{}]的报名记录[{}]关联的用户[{}]不存在，已跳过",
                         activityId, registration.getRegistrationId(), registration.getUserId());
                 continue;
             }
@@ -363,12 +358,9 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
             dto.setSerialNumber(i + 1); // 序号从1开始
             dto.setUserName(user.getUsername());
             dto.setStudentId(user.getStudentId());
-            dto.setGrade(user.getGrade().getDesc()); // 年级信息
+            dto.setCollege(user.getCollege().getDesc());
+            dto.setGrade(user.getGrade().getDesc());
             dto.setPhone(user.getPhone());
-
-            // 核心修正：用户学院直接取自User表的college字段（无需通过部门查询）
-            dto.setCollege(user.getCollege() != null ? user.getCollege().getDesc(): "未知学院");
-
             result.add(dto);
         }
 
