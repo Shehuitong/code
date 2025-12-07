@@ -18,13 +18,13 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "activityName": "ffff大赛",
+  "activityName": "mmmmm大赛",
   "holdStartTime": "2025-12-20T14:00:00",
   "holdEndTime": "2025-12-20T17:30:00",
   "location": "外国语学院302会议室",
   "applyGrade": "2022级+2024级+2025级",
   "applyCollege": "经管学院",
-  "applyTime": "2025-12-07T03:45:00",
+  "applyTime": "2025-12-07T15:28:00",
   "applyDeadline": "2025-12-15T23:59:59",
   "scoreType": "1.4.人文与科学素养",
   "score": 3.50,

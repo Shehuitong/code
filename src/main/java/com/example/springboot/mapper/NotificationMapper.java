@@ -15,7 +15,7 @@ public interface NotificationMapper extends BaseMapper<Notification> {
             n.notification_id AS notificationId,
             n.user_id AS userId,
             n.content AS content,
-            n.create_time AS createTime,
+            n.send_time AS createTime,
             -- 关联活动表
             a.activity_id AS activityId,
             a.activity_name AS activityName,
@@ -26,7 +26,7 @@ public interface NotificationMapper extends BaseMapper<Notification> {
         LEFT JOIN Activity a ON n.related_activity_id = a.activity_id
         LEFT JOIN Department d ON n.related_department_id = d.department_id
         WHERE n.user_id = #{userId}
-        ORDER BY n.create_time DESC
+        ORDER BY n.send_time DESC
         """)
     List<Notification> getByUserId(Long userId);
 }

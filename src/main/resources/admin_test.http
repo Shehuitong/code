@@ -3,8 +3,8 @@ POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "account": "G2025023",
-  "password": "Gg2025023"
+  "account": "G2025001",
+  "password": "Gg2025001"
 }
 
 > {%
@@ -60,7 +60,7 @@ Content-Disposition: form-data; name="departmentId"
 
 
 ### 6. 查看部门详情
-GET http://localhost:8080/api/department/detail?departmentId=2
+GET http://localhost:8080/api/department/detail?departmentId=5
 Content-Type: application/x-www-form-urlencoded
 
 ###6. 编辑部门信息
@@ -75,11 +75,11 @@ Content-Type: application/json
 
 
 ###查看当前部门关注人数
-GET http://localhost:8080/api/department/follow-count?departmentId=2
+GET http://localhost:8080/api/department/follow-count?departmentId=5
 Authorization: Bearer {{adminToken}}
 
 ###查看部门发布活动数
-GET http://localhost:8080/api/admin/activities/count?departmentId=1
+GET http://localhost:8080/api/admin/activities/count?departmentId=5
 
 ###查看部门发布活动列表
 GET http://localhost:8080/api/department/activities?departmentId=1
