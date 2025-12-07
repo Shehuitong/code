@@ -50,46 +50,13 @@ Content-Type: application/json
 POST http://localhost:8080/login
 Content-Type: application/json
 
-{
-  "account": "G2025001",
-  "password": "Admin123"
-}
-> {%
-    try {
-        const resBody = response.body || {};
-        if (resBody.code === 200 && resBody.data && resBody.data.token) {
-            client.global.set("adminToken", resBody.data.token);
-            console.log("✅ 管理员登录成功，Token已设置");
-        } else {
-            console.error("❌ 管理员登录失败：" + (resBody.message || "未知错误") + "，响应体：" + JSON.stringify(resBody));
-        }
-    } catch (e) {
-        console.error("❌ 管理员登录脚本错误：" + e.message);
-    }
-%}
 
 
 ### 4. 【前置】用户1（张三，外国语学院2022级）登录（获取Token）
 POST http://localhost:8080/login
 Content-Type: application/json
 
-{
-  "account": "202200101",
-  "password": "Aa202200101"
-}
-> {%
-    try {
-        const resBody = response.body || {};
-        if (resBody.code === 200 && resBody.data && resBody.data.token) {
-            client.global.set("user1Token", resBody.data.token);
-            console.log("✅ 用户1登录成功，Token已设置");
-        } else {
-            console.error("❌ 用户1登录失败：" + (resBody.message || "未知错误") + "，响应体：" + JSON.stringify(resBody));
-        }
-    } catch (e) {
-        console.error("❌ 用户1登录脚本错误：" + e.message);
-    }
-%}
+
 
 
 ### 5. 查询活动1（程序设计竞赛）初始信息（验证活动存在性）
@@ -97,7 +64,7 @@ Content-Type: application/json
 GET http://localhost:8080/api/activity/detail/1
 
 ### 6. 用户4（2025级）报名活动1（显式传递请求体参数）
-POST http://localhost:8080/api/registration/activity/70
+POST http://localhost:8080/api/registration/activity/81
 Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 

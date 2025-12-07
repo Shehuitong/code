@@ -5,7 +5,7 @@ GET http://localhost:8080/api/activity/search/suggest?keyword=数学
 GET http://localhost:8080/api/activity/search?keyword=竞赛 & pageNum=1&pageSize=10
 
 ###3. 活动详情接口
-GET http://localhost:8080/api/activity/detail/78
+GET http://localhost:8080/api/activity/detail/83
 
 
 ###1. 部门搜索联想接口

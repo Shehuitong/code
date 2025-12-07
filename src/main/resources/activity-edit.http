@@ -28,7 +28,7 @@ Content-Type: application/json
 %}
 
 ### 3. 正常编辑活动（所有字段合法，整数ID）
-PUT http://localhost:8080/api/admin/activities/70
+PUT http://localhost:8080/api/admin/activities/82
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 

@@ -58,7 +58,7 @@ Content-Type: application/json
 
 
 ### 【场景1】用户1收藏新活动（活动3：志愿者招募活动）
-POST http://localhost:8080/favorites/activity/add?activityId=78&userId=1
+POST http://localhost:8080/favorites/activity/add?activityId=83&userId=1
 Authorization: Bearer {{userToken}}
 Content-Type: application/x-www-form-urlencoded
 
@@ -66,7 +66,7 @@ Content-Type: application/x-www-form-urlencoded
 
 
 ### 【场景1】用户1收藏新部門（活动3：志愿者招募活动）
-POST http://localhost:8080/favorites/department/add?departmentId=5&userId=1
+POST http://localhost:8080/favorites/department/add?departmentId=1&userId=1
 Authorization: Bearer {{userToken}}
 Content-Type: application/x-www-form-urlencoded
 

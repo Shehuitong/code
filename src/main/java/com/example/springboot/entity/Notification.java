@@ -30,5 +30,9 @@ public class Notification {
     private String content;  // 通知内容（对应数据库enum类型，Java用String接收）
 
     @TableField("send_time")
-    private LocalDateTime createTime;
+    private LocalDateTime sendTime;
+
+    public static final String TYPE_DEPARTMENT_NEW_ACTIVITY = "部门发布新活动通知";
+    public static final String TYPE_ACTIVITY_EDITED = "活动编辑通知";
+    public static final String TYPE_ACTIVITY_REGISTRATION_REMINDER = "活动报名开始提醒";
 }

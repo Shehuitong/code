@@ -2,6 +2,7 @@ package com.example.springboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.springboot.entity.Activity;
+import com.example.springboot.entity.Notification;
 import com.example.springboot.entity.ReminderLog;
 import com.example.springboot.entity.UserFavorites;
 import com.example.springboot.enums.ActivityStatusEnum;
@@ -65,8 +66,8 @@ public class ActivityReminderTask {
 
             // 3. 查询收藏了这些活动的用户（已收藏且未删除）
             LambdaQueryWrapper<UserFavorites> favoritesQuery = new LambdaQueryWrapper<>();
-            favoritesQuery.eq(UserFavorites::getTargetType, "ACTIVITY")
-                    .eq(UserFavorites::getFavoriteStatus, "已收藏")
+            favoritesQuery.eq(UserFavorites::getTargetType, UserFavorites.TYPE_ACTIVITY)
+                    .eq(UserFavorites::getFavoriteStatus, UserFavorites.STATUS_FAVORITED)
                     .eq(UserFavorites::getIsDeleted, 0)
                     .in(UserFavorites::getTargetId, activityIds);
 
@@ -100,7 +101,13 @@ public class ActivityReminderTask {
 // 2. 提取活动所属部门ID（需确保Activity类有getDepartmentId()方法，字段名按实际调整）
                     Long relatedDepartmentId = currentActivity.getDepartmentId();
 // 3. 调用通知服务：relatedActivityId直接使用activityId
-                    notificationService.sendNotification(userId, notificationContent, activityId, relatedDepartmentId);
+                    notificationService.sendNotification(
+                            userId,
+                            notificationContent,
+                            activityId,
+                            relatedDepartmentId,
+                            Notification.TYPE_ACTIVITY_REGISTRATION_REMINDER  // 新增：通知类型常量
+                    );
                     // 记录日志（关联用户+活动）
                     recordReminderLog(userId, activityId);
                     log.info("已向用户[{}]发送活动[{}]的报名提醒", userId, activityId);
